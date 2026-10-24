@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tasks - FlowSpace</title><link rel="stylesheet" href="css/style.css"></head>
+<body data-page="tasks">
+<div class="shell"><nav class="side" id="nav"></nav><main>
+<h1>Tasks</h1>
+<form id="f" class="card" novalidate><input type="hidden" name="id">
+<div class="grid g3"><label>Task<input name="title" data-v="required|min:3|max:100"><small class="err" data-for="title"></small></label>
+<label>Due date<input name="due" type="date" data-v="required|date"><small class="err" data-for="due"></small></label>
+<label>Priority<select name="priority"><option value="LOW">Low</option><option value="MEDIUM" selected>Medium</option><option value="HIGH">High</option></select></label></div>
+<button class="btn">Add task</button></form>
+<div class="bar"><label style="margin:0">Sort by <select id="sort" style="display:inline-block;width:auto"><option value="due">Due date</option><option value="priority">Priority</option></select></label></div>
+<div class="kan">
+<div><h2>To do (<span id="n-TODO">0</span>)</h2><div id="c-TODO"></div></div>
+<div><h2>In progress (<span id="n-IN_PROGRESS">0</span>)</h2><div id="c-IN_PROGRESS"></div></div>
+<div><h2>Done (<span id="n-DONE">0</span>)</h2><div id="c-DONE"></div></div></div>
+</main></div>
+<script src="js/validate.js"></script><script src="js/core.js"></script><script src="js/tasks.js"></script></body></html>
