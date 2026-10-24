@@ -3,9 +3,12 @@ package com.flowspace.backend;
 
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +25,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> data) {
+    public ResponseEntity<?> register(
+            @RequestBody Map<String, String> data) {
+
         try {
             User user = authService.register(
                 data.get("name"),
@@ -45,21 +50,26 @@ public class AuthController {
             );
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Registration failed"));
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).body(Map.of("error", "Registration failed"));
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody Map<String, String> data,
-            HttpSession session) {
+            HttpSession session,
+            HttpServletRequest request) {
+
         try {
             User user = authService.login(
                 data.get("email"),
                 data.get("password")
             );
+
+            // Rotate the session ID after successful authentication.
+            request.changeSessionId();
 
             session.setAttribute("userId", user.getUserId());
 
@@ -73,32 +83,36 @@ public class AuthController {
             );
 
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                Map.of("error", e.getMessage())
-            );
+            return ResponseEntity.status(
+                HttpStatus.UNAUTHORIZED
+            ).body(Map.of("error", e.getMessage()));
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Login failed"));
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).body(Map.of("error", "Login failed"));
         }
     }
-    
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
+
         session.invalidate();
 
         return ResponseEntity.ok(
             Map.of("message", "Logout successful")
         );
     }
-    
-    @org.springframework.web.bind.annotation.GetMapping("/me")
+
+    @GetMapping("/me")
     public ResponseEntity<?> me(HttpSession session) {
+
         Object value = session.getAttribute("userId");
 
         if (!(value instanceof Number)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Please log in"));
+            return ResponseEntity.status(
+                HttpStatus.UNAUTHORIZED
+            ).body(Map.of("error", "Please log in"));
         }
 
         try {
@@ -106,18 +120,23 @@ public class AuthController {
             User user = authService.getUser(userId);
 
             if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "User not found"));
+                return ResponseEntity.status(
+                    HttpStatus.NOT_FOUND
+                ).body(Map.of("error", "User not found"));
             }
 
-            return ResponseEntity.ok(Map.of(
-                "userId", user.getUserId(),
-                "name", user.getName(),
-                "email", user.getEmail()
-            ));
+            return ResponseEntity.ok(
+                Map.of(
+                    "userId", user.getUserId(),
+                    "name", user.getName(),
+                    "email", user.getEmail()
+                )
+            );
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Could not load account"));
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).body(Map.of("error", "Could not load account"));
         }
     }
 
@@ -125,28 +144,40 @@ public class AuthController {
     public ResponseEntity<?> updateName(
             @RequestBody Map<String, String> data,
             HttpSession session) {
+
         Object value = session.getAttribute("userId");
 
         if (!(value instanceof Number)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Please log in"));
+            return ResponseEntity.status(
+                HttpStatus.UNAUTHORIZED
+            ).body(Map.of("error", "Please log in"));
         }
 
         try {
             int userId = ((Number) value).intValue();
-            User user = authService.updateName(userId, data.get("name"));
 
-            return ResponseEntity.ok(Map.of(
-                "message", "Name updated",
-                "name", user.getName(),
-                "email", user.getEmail()
-            ));
+            User user = authService.updateName(
+                userId,
+                data.get("name")
+            );
+
+            return ResponseEntity.ok(
+                Map.of(
+                    "message", "Name updated",
+                    "name", user.getName(),
+                    "email", user.getEmail()
+                )
+            );
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(
+                Map.of("error", e.getMessage())
+            );
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Could not update name"));
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).body(Map.of("error", "Could not update name"));
         }
     }
 
@@ -154,11 +185,13 @@ public class AuthController {
     public ResponseEntity<?> changePassword(
             @RequestBody Map<String, String> data,
             HttpSession session) {
+
         Object value = session.getAttribute("userId");
 
         if (!(value instanceof Number)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Please log in"));
+            return ResponseEntity.status(
+                HttpStatus.UNAUTHORIZED
+            ).body(Map.of("error", "Please log in"));
         }
 
         try {
@@ -173,16 +206,16 @@ public class AuthController {
             return ResponseEntity.ok(
                 Map.of("message", "Password changed successfully")
             );
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(
+                Map.of("error", e.getMessage())
+            );
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Could not change password"));
+            return ResponseEntity.status(
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ).body(Map.of("error", "Could not change password"));
         }
     }
-
-
-
 }
-
