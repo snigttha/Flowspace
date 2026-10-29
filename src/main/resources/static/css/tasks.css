@@ -1,0 +1,315 @@
+/* ==========================================================================
+   FlowSpace – Tasks Module Stylesheet
+   Owner: Member 3
+   Inherits base design system from css/style.css
+   ========================================================================== */
+
+/* ── Tasks Header ────────────────────────────────────────────────────────── */
+.tasks-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tasks-header .sub {
+  color: var(--mute, #8a7a85);
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Task Form Card ──────────────────────────────────────────────────────── */
+.task-form-card {
+  margin-bottom: 1.5rem;
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.form-header h2 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* ── Metrics Summary Bar (Feeds Member 6 Dashboard) ──────────────────────── */
+.metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e5dde2);
+  border-radius: var(--radius, 12px);
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--mute, #8a7a85);
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--ink, #1f141d);
+}
+
+.metric-overdue .metric-value {
+  color: #dc2626;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+.tasks-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sort-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--ink, #1f141d);
+  font-weight: 500;
+}
+
+.sort-control select {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border, #e5dde2);
+  background: var(--surface, #ffffff);
+  font-family: inherit;
+  font-size: 0.88rem;
+}
+
+/* ── Kanban Grid Layout ──────────────────────────────────────────────────── */
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.kanban-column {
+  border-radius: var(--radius, 12px);
+  border: 1px solid var(--border, #e5dde2);
+  padding: 1.15rem;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Distinct Column Tints (Plan requirement) */
+.column-todo {
+  background: rgba(100, 116, 139, 0.04);
+  border-color: rgba(100, 116, 139, 0.2);
+}
+
+.column-in-progress {
+  background: rgba(59, 130, 246, 0.04);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.column-done {
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.kanban-col-header {
+  padding-bottom: 0.85rem;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border, #e5dde2);
+}
+
+.kanban-col-header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex-grow: 1;
+}
+
+/* ── Task Cards ──────────────────────────────────────────────────────────── */
+.task-card {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e5dde2);
+  border-radius: var(--radius-sm, 8px);
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* OVERDUE Requirement: Does NOT rely on color alone! */
+.task-card.is-overdue {
+  border: 2px dashed #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
+.card-title {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--ink, #1f141d);
+  word-break: break-word;
+  margin: 0;
+}
+
+.card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+/* Distinct Priority Badges with Colors AND Text */
+.priority-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.priority-low {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.priority-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.priority-high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Overdue Badge (Explicit Warning Icon + Label) */
+.overdue-tag {
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 0.8rem;
+  color: var(--mute, #8a7a85);
+}
+
+.card-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.btn-card-action {
+  background: var(--bg, #fbf7f9);
+  border: 1px solid var(--border, #e5dde2);
+  color: var(--ink, #1f141d);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-card-action:hover {
+  background: var(--primary, #5a2044);
+  color: #ffffff;
+  border-color: var(--primary, #5a2044);
+}
+
+.btn-card-delete:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+.empty-col {
+  height: 120px;
+  border: 2px dashed var(--border, #e5dde2);
+  border-radius: var(--radius-sm, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mute, #8a7a85);
+  font-size: 0.85rem;
+}
+
+/* ── Mobile Stacking (Plan requirement: test at 375 px) ───────────────────── */
+@media (max-width: 860px) {
+  .kanban-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .kanban-column {
+    min-height: auto;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
