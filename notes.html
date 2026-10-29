@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notes – FlowSpace</title>
+  <meta name="description" content="Create, search, and organise your personal notes in FlowSpace.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/notes.css">
+</head>
+
+<body data-page="notes">
+  <div class="shell">
+    <nav class="side" id="nav"></nav>
+    <main>
+      <div class="notes-header">
+        <div>
+          <h1>Notes</h1>
+          <p class="sub">Capture every thought, idea, and reminder.</p>
+        </div>
+        <button class="btn" id="btnNewNote" aria-expanded="false" aria-controls="noteFormCard">
+          <span class="btn-icon">＋</span> New note
+        </button>
+      </div>
+
+      <!-- ── Create / Edit form ── -->
+      <section id="noteFormCard" class="card note-form-card" hidden aria-label="Note editor">
+        <div class="form-header">
+          <h2 id="formTitle">New note</h2>
+          <button class="btn ghost btn-sm" id="btnCancelNote" type="button" aria-label="Discard note">✕ Discard</button>
+        </div>
+        <form id="f" novalidate autocomplete="off">
+          <input type="hidden" name="id">
+          <div class="grid g2 form-row">
+            <label>
+              Title <span class="required-star" aria-hidden="true">*</span>
+              <input name="title" id="note-title" type="text" data-v="required|max:100"
+                placeholder="Give this note a title…" maxlength="100" aria-required="true"
+                aria-describedby="err-title char-title">
+              <small class="err" id="err-title" data-for="title" role="alert"></small>
+              <small class="char-count" id="char-title" aria-live="polite"></small>
+            </label>
+            <label>
+              Category
+              <select name="category" id="note-category" aria-label="Note category">
+                <option value="General">📝 General</option>
+                <option value="Study">📚 Study</option>
+                <option value="Personal">👤 Personal</option>
+                <option value="Ideas">💡 Ideas</option>
+                <option value="Health">❤️ Health</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            Note <span class="required-star" aria-hidden="true">*</span>
+            <textarea name="content" id="note-content" data-v="required|max:2000" placeholder="Start writing…"
+              maxlength="2000" rows="6" aria-required="true" aria-describedby="err-content char-content"></textarea>
+            <small class="err" id="err-content" data-for="content" role="alert"></small>
+            <small class="char-count" id="char-content" aria-live="polite"></small>
+          </label>
+          <div class="form-actions">
+            <button class="btn" id="btnSubmitNote" type="submit">Save note</button>
+            <button class="btn ghost" id="btnCancelNote2" type="button">Cancel</button>
+          </div>
+          <p class="form-error" id="form-server-error" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <!-- ── Search + filter bar ── -->
+      <div class="notes-toolbar" role="search" aria-label="Note search and filter">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input id="q" type="search" placeholder="Search notes…" aria-label="Search notes" autocomplete="off"
+            spellcheck="false">
+          <button class="btn ghost btn-sm clear-search" id="btnClearSearch" hidden aria-label="Clear search">✕</button>
+        </div>
+        <div class="filter-row">
+          <label class="filter-label" for="cat">
+            <span class="sr-only">Filter by category</span>
+            <select id="cat" aria-label="Filter by category">
+              <option value="">All categories</option>
+              <option value="General">📝 General</option>
+              <option value="Study">📚 Study</option>
+              <option value="Personal">👤 Personal</option>
+              <option value="Ideas">💡 Ideas</option>
+              <option value="Health">❤️ Health</option>
+            </select>
+          </label>
+          <label class="filter-label" for="sortBy">
+            <span class="sr-only">Sort by</span>
+            <select id="sortBy" aria-label="Sort notes">
+              <option value="updated">Last updated</option>
+              <option value="created">Date created</option>
+              <option value="title">Title A–Z</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── Results count ── -->
+      <p class="results-count" id="resultsCount" aria-live="polite"></p>
+
+      <!-- ── Loading state ── -->
+      <div id="loadingState" class="loading-state" hidden aria-label="Loading notes" role="status">
+        <div class="spinner" aria-hidden="true"></div>
+        <span>Loading your notes…</span>
+      </div>
+
+      <!-- ── API error banner ── -->
+      <div id="apiBanner" class="api-banner" hidden role="alert">
+        <span id="apiBannerMsg"></span>
+        <button class="btn ghost btn-sm" id="btnRetry">Retry</button>
+      </div>
+
+      <!-- ── Notes list ── -->
+      <div id="list" role="list" aria-label="Notes list"></div>
+
+    </main>
+  </div>
+
+  <!-- ── Delete confirmation dialog ── -->
+  <dialog id="deleteDialog" aria-labelledby="dlgTitle" aria-describedby="dlgDesc">
+    <div class="dialog-inner">
+      <h2 id="dlgTitle">Delete this note?</h2>
+      <p id="dlgDesc" class="mute">This cannot be undone. The note will be permanently removed.</p>
+      <div class="dialog-actions">
+        <button class="btn danger" id="confirmDelete">Yes, delete it</button>
+        <button class="btn ghost" id="cancelDelete">Keep it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/validate.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/notes.js"></script>
+</body>
+
+</html>

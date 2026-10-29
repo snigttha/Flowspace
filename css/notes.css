@@ -1,0 +1,361 @@
+/* ============================================================
+   notes.css  –  Member 2: Notes module styles
+   Depends on css/style.css (shared design system).
+   Colour variables, fonts, and layout shell are in style.css.
+   ============================================================ */
+
+/* ── Category colour palette (used for card borders + tags) ── */
+:root {
+  --cat-general:  #7f9c86;   /* sage green */
+  --cat-study:    #6b8fc9;   /* steel blue */
+  --cat-personal: #c98b9b;   /* rose */
+  --cat-ideas:    #c9a46b;   /* amber */
+  --cat-health:   #89b4a8;   /* teal */
+
+  --cat-general-bg:  #eef3ef;
+  --cat-study-bg:    #eef2f9;
+  --cat-personal-bg: #f7ebed;
+  --cat-ideas-bg:    #f9f3e9;
+  --cat-health-bg:   #edf4f2;
+}
+
+/* ── Page header ── */
+.notes-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.notes-header h1 { margin-bottom: .2rem; }
+
+/* ── Note form card ── */
+.note-form-card {
+  margin-bottom: 1.5rem;
+  border-top: 4px solid var(--plum);
+  animation: slideDown .18s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+.note-form-card[hidden] { display: none; }
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.form-header h2 { margin: 0; }
+
+.form-row { margin-bottom: .5rem; }
+
+.form-actions {
+  display: flex;
+  gap: .75rem;
+  margin-top: 1.1rem;
+  flex-wrap: wrap;
+}
+
+.form-error {
+  color: var(--bad);
+  font-size: .88rem;
+  margin-top: .6rem;
+  padding: .5rem .75rem;
+  background: rgba(179,38,30,.07);
+  border-radius: 8px;
+  border-left: 3px solid var(--bad);
+}
+.form-error[hidden] { display: none; }
+
+/* Character counter */
+.char-count {
+  color: var(--mute);
+  font-size: .78rem;
+  display: block;
+  text-align: right;
+  margin-top: .15rem;
+  transition: color .15s;
+}
+.char-count.near  { color: #b07a00; }
+.char-count.over  { color: var(--bad); font-weight: 600; }
+
+/* Required star */
+.required-star { color: var(--bad); margin-left: .15rem; }
+
+/* Visible edit-mode indicator */
+.note-form-card.editing-mode {
+  border-top-color: var(--sage);
+  background: linear-gradient(135deg, #fff 0%, #f4f9f5 100%);
+}
+.note-form-card.editing-mode .form-header h2::before {
+  content: "✏️ ";
+}
+
+/* ── Toolbar: search + filters ── */
+.notes-toolbar {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: .75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+.search-wrap .search-icon {
+  position: absolute;
+  left: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: .9rem;
+}
+.search-wrap input[type=search] {
+  padding-left: 2.2rem;
+  padding-right: 2.4rem;
+  border-radius: 999px;
+}
+.search-wrap input[type=search]:focus {
+  border-color: var(--plum);
+  box-shadow: 0 0 0 4px rgba(107,45,69,.13);
+}
+.clear-search {
+  position: absolute;
+  right: .4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: .2rem .5rem;
+  font-size: .8rem;
+  border-radius: 999px;
+}
+.clear-search[hidden] { display: none; }
+
+.filter-row {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.filter-label {
+  font-weight: 500;
+  font-size: .88rem;
+  margin: 0;
+}
+.filter-label select {
+  display: inline-block;
+  width: auto;
+  border-radius: 999px;
+  padding: .5rem .9rem;
+  font-size: .88rem;
+  margin-top: 0;
+  cursor: pointer;
+}
+
+/* ── Results count ── */
+.results-count {
+  font-size: .84rem;
+  color: var(--mute);
+  margin-bottom: .6rem;
+  min-height: 1.2em;
+}
+
+/* ── Loading spinner ── */
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: var(--mute);
+  padding: 2rem 0;
+}
+.loading-state[hidden] { display: none; }
+.spinner {
+  width: 24px; height: 24px;
+  border: 3px solid var(--line);
+  border-top-color: var(--plum);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── API error banner ── */
+.api-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: .9rem;
+  color: #7f1d1d;
+}
+.api-banner[hidden] { display: none; }
+
+/* ── Note cards ── */
+#list { display: flex; flex-direction: column; gap: .85rem; }
+
+.note-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  border-left: 5px solid var(--plum);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow);
+  transition: transform .15s, box-shadow .15s;
+  position: relative;
+  animation: fadeIn .2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+.note-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59,23,39,.12), 0 1px 3px rgba(59,23,39,.06);
+}
+
+/* Category-specific left border and background tints */
+.note-card[data-cat="General"]  { border-left-color: var(--cat-general); }
+.note-card[data-cat="Study"]    { border-left-color: var(--cat-study); }
+.note-card[data-cat="Personal"] { border-left-color: var(--cat-personal); }
+.note-card[data-cat="Ideas"]    { border-left-color: var(--cat-ideas); }
+.note-card[data-cat="Health"]   { border-left-color: var(--cat-health); }
+
+.note-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .5rem;
+}
+.note-card-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--deep);
+  line-height: 1.3;
+  flex: 1;
+}
+
+/* Category tags per colour */
+.note-tag {
+  border-radius: 999px;
+  padding: .18rem .75rem;
+  font-size: .75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.note-tag-General  { background: var(--cat-general-bg);  color: #2e5e38; }
+.note-tag-Study    { background: var(--cat-study-bg);    color: #1e3a6e; }
+.note-tag-Personal { background: var(--cat-personal-bg); color: #6b2d45; }
+.note-tag-Ideas    { background: var(--cat-ideas-bg);    color: #7a5000; }
+.note-tag-Health   { background: var(--cat-health-bg);   color: #1c4a42; }
+
+.note-preview {
+  margin: .35rem 0 .6rem;
+  color: var(--mute);
+  font-size: .9rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Search keyword highlight */
+.note-preview mark, .note-card-head h3 mark {
+  background: #fde68a;
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 .1em;
+}
+
+.note-meta {
+  font-size: .78rem;
+  color: var(--mute);
+  margin-bottom: .65rem;
+}
+
+.note-actions {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: .28rem .75rem;
+  font-size: .82rem;
+  border-radius: 999px;
+}
+
+.btn.danger {
+  background: var(--bad);
+  border-color: var(--bad);
+}
+.btn.danger:hover { background: #8c1a14; border-color: #8c1a14; }
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  color: var(--mute);
+  border: 2px dashed #d9c8cd;
+  border-radius: var(--r);
+  background: rgba(255,255,255,.5);
+  animation: fadeIn .25s ease-out;
+}
+.empty-state .empty-icon { font-size: 2.8rem; margin-bottom: .6rem; }
+.empty-state h3 { color: var(--mute); font-size: 1.05rem; margin-bottom: .35rem; }
+.empty-state p  { margin: 0 0 1.1rem; font-size: .9rem; }
+
+/* ── Delete dialog ── */
+dialog {
+  border: none;
+  border-radius: var(--r);
+  box-shadow: 0 8px 40px rgba(59,23,39,.22);
+  padding: 0;
+  max-width: 380px;
+  width: 90%;
+}
+dialog::backdrop { background: rgba(43,27,34,.45); }
+.dialog-inner { padding: 1.75rem 1.5rem; }
+.dialog-inner h2 { margin-bottom: .5rem; }
+.dialog-inner .mute { margin-bottom: 1.2rem; }
+.dialog-actions { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: flex-end; }
+
+/* ── Utility ── */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ── Phone layout (≤ 600 px) ── */
+@media (max-width: 600px) {
+  .notes-header { flex-direction: column; gap: .75rem; }
+  .notes-header .btn { width: 100%; justify-content: center; }
+  .notes-toolbar { flex-direction: column; gap: .5rem; }
+  .search-wrap { min-width: 100%; }
+  .filter-row  { width: 100%; }
+  .filter-label select { flex: 1; }
+  .form-actions { flex-direction: column; }
+  .form-actions .btn { width: 100%; text-align: center; }
+  .note-card-head { flex-direction: column; gap: .4rem; }
+  .dialog-actions { flex-direction: column-reverse; }
+  .dialog-actions .btn { width: 100%; text-align: center; }
+}
+
+/* ── Reduced-motion override (complementing style.css) ── */
+@media (prefers-reduced-motion: reduce) {
+  .note-form-card, .note-card, .empty-state { animation: none !important; }
+  .spinner { animation: none !important; border-top-color: var(--plum); }
+}

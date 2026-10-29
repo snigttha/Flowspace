@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wellness - FlowSpace</title><link rel="stylesheet" href="css/style.css"></head>
+<body data-page="wellness">
+<div class="shell"><nav class="side" id="nav"></nav><main>
+<h1>Wellness</h1><p class="sub" id="pred"></p>
+<div class="grid g2">
+<section class="card"><div class="row"><button class="btn ghost" id="prev" aria-label="Previous month">Prev</button><h2 id="calTitle"></h2><button class="btn ghost" id="next" aria-label="Next month">Next</button></div><div id="cal"></div>
+<p class="mute">Filled circle: period start. Dashed circle: predicted.</p>
+<form id="cycle" novalidate><label>Period start date<input name="start" type="date" data-v="required|date|notfuture"><small class="err" data-for="start"></small></label>
+<label>Cycle length (days)<input name="length" type="number" value="28" data-v="required|range:15:60"><small class="err" data-for="length"></small></label>
+<button class="btn">Save cycle</button></form></section>
+<section class="card"><h2>Log today's mood</h2>
+<form id="mood" novalidate><div class="grid g2"><label>Date<input name="date" type="date" data-v="required|date|notfuture"><small class="err" data-for="date"></small></label>
+<label>Mood<select name="mood" data-v="required"><option value="">Choose</option><option value="HAPPY">Happy</option><option value="CALM">Calm</option><option value="NEUTRAL">Neutral</option><option value="TIRED">Tired</option><option value="ANXIOUS">Anxious</option><option value="IRRITABLE">Irritable</option><option value="SAD">Sad</option></select><small class="err" data-for="mood"></small></label></div>
+<label>Symptoms<input name="symptoms" placeholder="e.g. cramps, headache" data-v="max:200"><small class="err" data-for="symptoms"></small></label>
+<label>Pain level: <output></output> / 10<input name="pain" type="range" min="0" max="10" value="0" data-v="range:0:10"></label>
+<label>Sleep: <output></output> hours<input name="sleep" type="range" min="0" max="24" step="0.5" value="7" data-v="range:0:24"></label>
+<label>Water: <output></output> glasses<input name="water" type="range" min="0" max="30" value="6" data-v="range:0:30"></label>
+<button class="btn">Save entry</button></form></section></div>
+<section class="card"><h2>Recent entries</h2><table><thead><tr><th>Date</th><th>Mood</th><th>Pain</th><th>Sleep</th><th>Water</th><th>Symptoms</th></tr></thead><tbody id="moods"></tbody></table></section>
+</main></div>
+<script src="js/validate.js"></script><script src="js/app.js"></script></body></html>

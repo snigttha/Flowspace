@@ -1,0 +1,8 @@
+com\flowspace\db\DBConnection.class
+com\flowspace\dao\NoteDAO.class
+com\flowspace\dao\Dao.class
+com\flowspace\api\NoteServlet.class
+com\flowspace\model\Note$Category.class
+com\flowspace\service\NoteManager.class
+com\flowspace\model\Note.class
+com\flowspace\model\WorkspaceItem.class

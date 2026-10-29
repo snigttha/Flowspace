@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Create account - FlowSpace</title><link rel="stylesheet" href="css/style.css"></head>
+<body data-page="register">
+<main class="auth"><h1>Create your account</h1><p class="sub">Your data stays private to you.</p>
+<form id="f" class="card" novalidate>
+<label>Name<input name="name" autocomplete="name" data-v="required|min:2|max:60"><small class="err" data-for="name"></small></label>
+<label>Email<input name="email" type="email" autocomplete="email" data-v="required|email"><small class="err" data-for="email"></small></label>
+<label>Password<input name="password" type="password" autocomplete="new-password" data-v="required|min:8|max:64|strong"><small class="err" data-for="password"></small></label>
+<label>Confirm password<input name="confirm" type="password" autocomplete="new-password" data-v="required|match:password"><small class="err" data-for="confirm"></small></label>
+<button class="btn">Create account</button></form>
+<p>Already registered? <a href="index.html">Log in</a></p></main>
+<script src="js/validate.js"></script><script src="js/app.js"></script></body></html>
