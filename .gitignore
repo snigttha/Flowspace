@@ -35,3 +35,4 @@ build/
 .env
 *.log
 log.txt
+*.db

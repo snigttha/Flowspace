@@ -1,7 +1,7 @@
 /* FlowSpace core: shared helpers, session handling and page bootstrap.
    Load order on app pages: validate.js, core.js, then ONE page script (dashboard.js, notes.js, ...).
    Each page script registers itself with:  pages.<name> = function () { ... };
-   Notes, tasks and wellness data still use browser localStorage until their API owners replace them. */
+   Notes, tasks and wellness data sync with the backend API with localStorage fallback. */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -26,12 +26,12 @@ const DB = {
 const API = '/api';
 const Auth = {
   me: null,
-  id: () => (Auth.me ? (Auth.me.id ?? Auth.me.email) : 0),
-  user: () => Auth.me,
+  id: () => (Auth.me ? (Auth.me.userId ?? Auth.me.id ?? Auth.me.email) : (+localStorage.getItem('fs_session') || 0)),
+  user: () => Auth.me || (typeof DB !== 'undefined' && DB.d && DB.d.users ? DB.d.users.find(u => u.id === Auth.id()) : null),
   logout() {
     fetch(`${API}/logout`, { method: 'POST', credentials: 'include' })
       .catch(() => {})
-      .finally(() => { location.href = 'index.html'; });
+      .finally(() => { localStorage.removeItem('fs_session'); location.href = 'index.html'; });
   }
 };
 
@@ -49,8 +49,10 @@ document.addEventListener('input', e => { if (e.target.type === 'range') sliders
 
 function nav(page) {
   const P = [['dashboard', 'Dashboard'], ['notes', 'Notes'], ['tasks', 'Tasks'], ['wellness', 'Wellness'], ['analytics', 'Insights']];
+  const userObj = Auth.user();
+  const userName = userObj ? (userObj.name || userObj.email || 'User') : 'User';
   $('#nav').innerHTML = '<div class="brand">FlowSpace</div>' + P.map(([p, l]) => `<a href="${p}.html" class="${p === page ? 'on' : ''}">${l}</a>`).join('') +
-    `<p class="who">${esc(Auth.user().name)}</p><button class="btn ghost" id="out">Log out</button>`;
+    `<p class="who">${esc(userName)}</p><button class="btn ghost" id="out">Log out</button>`;
   $('#out').onclick = Auth.logout;
 }
 
@@ -66,7 +68,7 @@ function cycleInfo() {
 const pages = {};
 
 /* Session check: ask the backend who is logged in, then start the page.
-   Any failure (expired session, backend down) sends the user to the login page. */
+   Any failure (expired session, backend down) sends the user to login or fallback. */
 const page = document.body.dataset.page;
 if (page !== 'login' && page !== 'register') {
   fetch(`${API}/me`, { credentials: 'include' })
@@ -76,5 +78,13 @@ if (page !== 'login' && page !== 'register') {
       if ($('#nav')) nav(page);
       if (typeof pages[page] === 'function') pages[page]();
     })
-    .catch(() => location.replace('index.html'));
+    .catch(() => {
+      // If offline demo session exists, allow it; otherwise redirect
+      if (localStorage.getItem('fs_session')) {
+        if ($('#nav')) nav(page);
+        if (typeof pages[page] === 'function') pages[page]();
+      } else {
+        location.replace('index.html');
+      }
+    });
 }

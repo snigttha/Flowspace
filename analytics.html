@@ -1,11 +1,69 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Insights - FlowSpace</title><link rel="stylesheet" href="css/style.css"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Insights - FlowSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
 <body data-page="analytics">
-<div class="shell"><nav class="side" id="nav"></nav><main>
-<h1>Insights</h1>
-<div class="grid g2"><section class="card"><h2>Task completion</h2><div id="done"></div></section><section class="card"><h2>Cycle statistics</h2><div id="cyc"></div></section></div>
-<section class="card"><h2>Mood trend (last 7 entries)</h2><div class="trend" id="trend"></div></section>
-<section class="card"><h2>Personal insights</h2><ul id="ins"></ul></section>
-</main></div>
-<script src="js/validate.js"></script><script src="js/app.js"></script></body></html>
+  <div class="shell">
+    <nav class="side" id="nav" aria-label="Main Navigation"></nav>
+    <main>
+      <h1>Insights</h1>
+      <p class="sub">Data-driven analysis across your tasks, habits, and wellness patterns.</p>
+
+      <!-- Loading State -->
+      <div id="analytics-loading" class="dash-state" style="display:none;" aria-live="polite">
+        <span>Loading your health and productivity insights...</span>
+      </div>
+
+      <!-- Error State -->
+      <div id="analytics-error" class="dash-state error-state" style="display:none;" role="alert">
+        <p id="analytics-error-msg">Could not load insights.</p>
+        <button class="btn ghost" id="analytics-retry-btn" type="button">Retry</button>
+      </div>
+
+      <!-- Two-column summary metrics -->
+      <div class="grid g2">
+        <section class="card">
+          <h2>Task completion</h2>
+          <div id="done" aria-live="polite"></div>
+        </section>
+        <section class="card">
+          <h2>Cycle statistics</h2>
+          <div id="cyc" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <!-- Mood Trend Visualization Card -->
+      <section class="card">
+        <h2>Mood trend (last 7 entries)</h2>
+        <div id="trend-content">
+          <div class="trend-container">
+            <div class="trend" id="trend" role="img" aria-label="Mood trend bar chart showing historical mood scores"></div>
+          </div>
+          <div class="trend-legend" aria-hidden="true" id="trend-legend">
+            <span>Score 5: Happy</span>
+            <span>Score 4: Calm</span>
+            <span>Score 3: Neutral</span>
+            <span>Score 2: Tired / Anxious / Irritable</span>
+            <span>Score 1: Sad</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Written Personal Insights Card -->
+      <section class="card">
+        <h2>Personal insights</h2>
+        <ul id="ins" class="insight-list" aria-live="polite"></ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/validate.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/analytics.js"></script>
+</body>
+</html>
