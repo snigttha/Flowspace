@@ -1,0 +1,29 @@
+# Database files (Team Rule: Never commit database files)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+flowspace.db
+
+# Build artifacts & Maven
+target/
+*.class
+*.jar
+*.war
+
+# IDE & Editor folders
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS & Environment
+.DS_Store
+Thumbs.db
+*.env
+
+# Node & test artifacts
+node_modules/
+npm-debug.log

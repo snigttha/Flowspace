@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wellness - FlowSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/wellness.css">
+</head>
+<body data-page="wellness">
+<div class="shell">
+  <nav class="side" id="nav"></nav>
+  <main>
+    <h1>Wellness</h1>
+    <p class="sub" id="pred">Track cycles, moods, and holistic daily wellness metrics.</p>
+
+    <div class="wellness-grid">
+      <!-- Member 4: Cycle Tracker Section -->
+      <section class="card" aria-labelledby="cycleHeading">
+        <div class="row">
+          <button class="btn ghost" id="prev" aria-label="Previous month">&larr; Prev</button>
+          <h2 id="calTitle">Calendar</h2>
+          <button class="btn ghost" id="next" aria-label="Next month">Next &rarr;</button>
+        </div>
+        <div id="cal"></div>
+        <p class="mute" style="font-size:0.8rem; margin:0.4rem 0 1rem 0;">
+          <span style="display:inline-block;width:10px;height:10px;background:var(--plum);border-radius:50%;margin-right:4px;"></span> Period start &nbsp;
+          <span style="display:inline-block;width:10px;height:10px;border:1px dashed var(--plum);border-radius:50%;margin-right:4px;"></span> Predicted
+        </p>
+        <form id="cycle" novalidate>
+          <label>Period start date
+            <input name="start" type="date" data-v="required|date|notfuture">
+            <small class="err" data-for="start"></small>
+          </label>
+          <label>Cycle length (days)
+            <input name="length" type="number" value="28" data-v="required|range:15:60">
+            <small class="err" data-for="length"></small>
+          </label>
+          <button class="btn" type="submit">Save cycle</button>
+        </form>
+      </section>
+
+      <!-- Member 5: Mood & Wellness Tracker Section -->
+      <section class="card" aria-labelledby="moodHeading">
+        <h2 id="moodHeading">Log today's wellness &amp; mood</h2>
+        <form id="mood" novalidate>
+          <div class="grid g2">
+            <label>Date
+              <input name="date" type="date" data-v="required|date|notfuture">
+              <small class="err" data-for="date"></small>
+            </label>
+            <label>Mood Selection
+              <select name="mood" id="moodSelect" data-v="required">
+                <option value="">Choose mood</option>
+                <option value="HAPPY">😊 Happy</option>
+                <option value="CALM">😌 Calm</option>
+                <option value="NEUTRAL">😐 Neutral</option>
+                <option value="TIRED">😴 Tired</option>
+                <option value="ANXIOUS">😰 Anxious</option>
+                <option value="IRRITABLE">😣 Irritable</option>
+                <option value="SAD">😢 Sad</option>
+              </select>
+              <small class="err" data-for="mood"></small>
+            </label>
+          </div>
+
+          <!-- Quick Mood Selector Chips -->
+          <div class="mood-picker" role="radiogroup" aria-label="Quick mood picker">
+            <button type="button" class="mood-btn" data-mood="HAPPY" aria-label="Happy">
+              <span class="icon">😊</span><span>Happy</span>
+            </button>
+            <button type="button" class="mood-btn" data-mood="CALM" aria-label="Calm">
+              <span class="icon">😌</span><span>Calm</span>
+            </button>
+            <button type="button" class="mood-btn" data-mood="NEUTRAL" aria-label="Neutral">
+              <span class="icon">😐</span><span>Neutral</span>
+            </button>
+            <button type="button" class="mood-btn" data-mood="TIRED" aria-label="Tired">
+              <span class="icon">😴</span><span>Tired</span>
+            </button>
+            <button type="button" class="mood-btn" data-mood="ANXIOUS" aria-label="Anxious">
+              <span class="icon">😰</span><span>Anxious</span>
+            </button>
+            <button type="button" class="mood-btn" data-mood="IRRITABLE" aria-label="Irritable">
+              <span class="icon">😣</span><span>Irritable</span>
+            </button>
+            <button type="button" class="mood-btn" data-mood="SAD" aria-label="Sad">
+              <span class="icon">😢</span><span>Sad</span>
+            </button>
+          </div>
+
+          <label>Symptoms &amp; Notes
+            <input name="symptoms" placeholder="e.g. cramps, headache, energetic" data-v="max:200" maxlength="200">
+            <small class="err" data-for="symptoms"></small>
+          </label>
+
+          <!-- Member 5 Custom Styled Sliders with live value badges -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Pain level (0 to 10)</span>
+              <span class="slider-val-badge pain-low" id="painVal">0 / 10</span>
+            </div>
+            <input class="range-slider" name="pain" type="range" min="0" max="10" value="0" data-v="range:0:10" aria-label="Pain level">
+            <div class="slider-scale-labels"><span>None (0)</span><span>Moderate (5)</span><span>Severe (10)</span></div>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Sleep duration</span>
+              <span class="slider-val-badge" id="sleepVal">7.0 hrs</span>
+            </div>
+            <input class="range-slider" name="sleep" type="range" min="0" max="24" step="0.5" value="7" data-v="range:0:24" aria-label="Sleep hours">
+            <div class="slider-scale-labels"><span>0h</span><span>8h recommended</span><span>24h</span></div>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Water intake</span>
+              <span class="slider-val-badge" id="waterVal">6 glasses</span>
+            </div>
+            <input class="range-slider" name="water" type="range" min="0" max="30" value="6" data-v="range:0:30" aria-label="Water glasses">
+            <div class="slider-scale-labels"><span>0</span><span>8 target</span><span>30</span></div>
+          </div>
+
+          <div style="margin-top:1.2rem;">
+            <button class="btn" type="submit">Save entry</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <!-- Recent Mood & Wellness Entries Table -->
+    <section class="card">
+      <div class="row">
+        <h2>Recent wellness entries</h2>
+        <small class="mute">One entry per day (editing updates that date)</small>
+      </div>
+      <div class="table-wrapper">
+        <table class="entries-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Mood</th>
+              <th>Pain</th>
+              <th>Sleep</th>
+              <th>Water</th>
+              <th>Symptoms</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="moods">
+            <tr><td colspan="7" class="mute" style="text-align:center;">Loading entries...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/validate.js"></script>
+<script src="js/app.js"></script>
+<script src="js/search.js"></script>
+<script src="js/mood.js"></script>
+</body>
+</html>

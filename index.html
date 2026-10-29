@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log in - FlowSpace</title><link rel="stylesheet" href="css/style.css"></head>
+<body data-page="login">
+<main class="auth"><h1>FlowSpace</h1><p class="sub">Your notes, tasks and wellness in one place.</p>
+<form id="f" class="card" novalidate>
+<label>Email<input name="email" type="email" autocomplete="email" data-v="required|email"><small class="err" data-for="email"></small></label>
+<label>Password<input name="password" type="password" autocomplete="current-password" data-v="required"><small class="err" data-for="password"></small></label>
+<button class="btn">Log in</button>
+<button type="button" class="btn ghost" id="demoBtn" style="width:100%;margin-top:0.6rem">Quick Demo Log in</button></form>
+<p>New here? <a href="register.html">Create an account</a></p></main>
+<script src="js/validate.js"></script><script src="js/app.js"></script></body></html>
