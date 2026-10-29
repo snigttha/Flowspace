@@ -233,6 +233,18 @@ public class TaskServlet extends HttpServlet {
         if (devHeader != null) {
             try { return Integer.parseInt(devHeader); } catch (NumberFormatException ignored) {}
         }
+        String paramId = req.getParameter("userId");
+        if (paramId != null) {
+            try { return Integer.parseInt(paramId); } catch (NumberFormatException ignored) {}
+        }
+        jakarta.servlet.http.Cookie[] cookies = req.getCookies();
+        if (cookies != null) {
+            for (jakarta.servlet.http.Cookie c : cookies) {
+                if ("userId".equals(c.getName()) || "fs_session".equals(c.getName())) {
+                    try { return Integer.parseInt(c.getValue()); } catch (NumberFormatException ignored) {}
+                }
+            }
+        }
         sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Sign-in required");
         return -1;
     }

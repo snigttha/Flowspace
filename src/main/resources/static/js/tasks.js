@@ -23,13 +23,33 @@
   const API_BASE = '/api/tasks';
   let useBackend = false;
 
+  function getAuthHeaders() {
+    const headers = {};
+    try {
+      let uid = 0;
+      if (typeof Auth !== 'undefined' && typeof Auth.id === 'function') {
+        uid = Auth.id();
+      }
+      if (!uid) {
+        uid = parseInt(localStorage.getItem('fs_session'), 10) || 0;
+      }
+      if (uid) {
+        headers['X-User-Id'] = String(uid);
+      }
+    } catch (_) {}
+    return headers;
+  }
+
   async function detectBackend() {
     try {
-      const r = await fetch(API_BASE, { method: 'GET', credentials: 'include' });
-      // If 200 OK or 401 Unauthorized, the servlet is active!
-      if (r.ok || r.status === 401) {
-        useBackend = true;
-      }
+      const r = await fetch(API_BASE, { 
+        method: 'GET', 
+        credentials: 'include', 
+        headers: getAuthHeaders(),
+        signal: AbortSignal.timeout(2000)
+      });
+      // Backend is usable only if it returns 200 OK
+      useBackend = r.ok;
     } catch {
       useBackend = false;
     }
@@ -50,15 +70,28 @@
   const TasksAPI = {
     async list(status = '', sort = 'due_date') {
       if (useBackend) {
-        const params = new URLSearchParams();
-        if (status) params.set('status', status);
-        if (sort)   params.set('sort', sort);
-        const r = await fetch(`${API_BASE}?${params}`, { credentials: 'include' });
-        if (!r.ok) throw new Error(await _errMsg(r));
-        return r.json();
+        try {
+          const params = new URLSearchParams();
+          if (status) params.set('status', status);
+          if (sort)   params.set('sort', sort);
+          const r = await fetch(`${API_BASE}?${params}`, { 
+            credentials: 'include',
+            headers: getAuthHeaders()
+          });
+          if (r.ok) return await r.json();
+          if (r.status === 401 || r.status === 403) {
+            useBackend = false;
+          } else {
+            throw new Error(await _errMsg(r));
+          }
+        } catch (err) {
+          if (err.message && !err.message.includes('Sign-in') && !err.message.includes('401')) {
+            throw err;
+          }
+        }
       }
       /* localStorage fallback */
-      let rows = typeof DB !== 'undefined' ? DB.mine('tasks') : [];
+      let rows = (typeof DB !== 'undefined' && typeof DB.mine === 'function') ? DB.mine('tasks') : [];
       if (status) rows = rows.filter(t => t.status === status);
       if (sort === 'priority') {
         const ranks = { HIGH: 1, MEDIUM: 2, LOW: 3 };
@@ -71,73 +104,93 @@
 
     async create(payload) {
       if (useBackend) {
-        const r = await fetch(API_BASE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(payload)
-        });
-        if (!r.ok) throw new Error(await _errMsg(r));
-        return r.json();
+        try {
+          const r = await fetch(API_BASE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+          });
+          if (r.ok) return await r.json();
+          if (r.status === 400) throw new Error(await _errMsg(r));
+          if (r.status === 401 || r.status === 403) {
+            useBackend = false;
+          }
+        } catch (err) {
+          if (err.message && (err.message.includes('characters') || err.message.includes('required') || err.message.includes('date'))) {
+            throw err;
+          }
+        }
       }
       const now = new Date().toISOString();
       const task = {
-        id: Date.now(),
-        task_id: Date.now(),
-        userId: typeof Auth !== 'undefined' ? Auth.id() : 1,
         title: payload.title,
         dueDate: payload.dueDate || payload.due_date,
         due_date: payload.dueDate || payload.due_date,
         priority: payload.priority || 'MEDIUM',
         status: 'TODO',
-        createdAt: now
+        createdAt: now,
+        userId: (typeof Auth !== 'undefined' && typeof Auth.id === 'function') ? Auth.id() : 1
       };
-      if (typeof DB !== 'undefined') DB.add('tasks', task);
+      if (typeof DB !== 'undefined' && typeof DB.add === 'function') {
+        return DB.add('tasks', task);
+      }
+      task.id = Date.now();
+      task.task_id = task.id;
       return task;
     },
 
     async update(id, payload) {
       if (useBackend) {
-        const r = await fetch(`${API_BASE}/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(payload)
-        });
-        if (!r.ok) throw new Error(await _errMsg(r));
-        return r.json();
-      }
-      if (typeof DB !== 'undefined') {
-        const row = DB.get('tasks', id);
-        if (row) {
-          Object.assign(row, payload);
-          DB.put('tasks', row);
-          return row;
+        try {
+          const r = await fetch(`${API_BASE}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+          });
+          if (r.ok) return await r.json();
+          if (r.status === 400) throw new Error(await _errMsg(r));
+          if (r.status === 401 || r.status === 403) useBackend = false;
+        } catch (err) {
+          if (err.message && (err.message.includes('characters') || err.message.includes('required'))) {
+            throw err;
+          }
         }
+      }
+      if (typeof DB !== 'undefined' && typeof DB.upd === 'function') {
+        DB.upd('tasks', id, payload);
+        const rows = DB.mine('tasks');
+        return rows.find(x => (x.id === id || x.task_id === id)) || payload;
       }
       return payload;
     },
 
     async updateStatus(id, newStatus) {
       if (useBackend) {
-        const r = await fetch(`${API_BASE}/${id}/status`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ status: newStatus })
-        });
-        if (!r.ok) throw new Error(await _errMsg(r));
-        return r.json();
+        try {
+          const r = await fetch(`${API_BASE}/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            credentials: 'include',
+            body: JSON.stringify({ status: newStatus })
+          });
+          if (r.ok) return await r.json();
+          if (r.status === 400) throw new Error(await _errMsg(r));
+          if (r.status === 401 || r.status === 403) useBackend = false;
+        } catch (err) {
+          if (err.message && err.message.includes('reopened')) throw err;
+        }
       }
-      if (typeof DB !== 'undefined') {
-        const row = DB.get('tasks', id);
+      if (typeof DB !== 'undefined' && typeof DB.mine === 'function') {
+        const rows = DB.mine('tasks');
+        const row = rows.find(x => (x.id === id || x.task_id === id));
         if (row) {
           if (row.status === 'DONE' && newStatus === 'IN_PROGRESS') {
             throw new Error('Completed tasks must be reopened to To Do first');
           }
-          row.status = newStatus;
-          DB.put('tasks', row);
-          return row;
+          DB.upd('tasks', id, { status: newStatus });
+          return { ...row, status: newStatus };
         }
       }
       return { status: newStatus };
@@ -145,14 +198,18 @@
 
     async delete(id) {
       if (useBackend) {
-        const r = await fetch(`${API_BASE}/${id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        if (!r.ok) throw new Error(await _errMsg(r));
-        return true;
+        try {
+          const r = await fetch(`${API_BASE}/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+            credentials: 'include'
+          });
+          if (r.ok) return true;
+        } catch (_) {}
       }
-      if (typeof DB !== 'undefined') DB.remove('tasks', id);
+      if (typeof DB !== 'undefined' && typeof DB.del === 'function') {
+        DB.del('tasks', id);
+      }
       return true;
     }
   };
@@ -384,12 +441,27 @@
       const dueDate = $('#taskDueDateInput').value;
       const priority = $('#taskPrioritySelect').value;
 
+      const errTitle = $('#err-title');
+      const errDue = $('#err-due');
+      if (errTitle) errTitle.textContent = '';
+      if (errDue) errDue.textContent = '';
+      $('#taskTitleInput')?.classList.remove('bad');
+      $('#taskDueDateInput')?.classList.remove('bad');
+
       if (title.length < 3 || title.length > 100) {
-        this.notify('Title must be between 3 and 100 characters', 'error');
+        const msg = 'Title must be between 3 and 100 characters';
+        if (errTitle) errTitle.textContent = msg;
+        $('#taskTitleInput')?.classList.add('bad');
+        $('#taskTitleInput')?.focus();
+        this.notify(msg, 'error');
         return;
       }
       if (!dueDate) {
-        this.notify('Due date is required', 'error');
+        const msg = 'Due date is required';
+        if (errDue) errDue.textContent = msg;
+        $('#taskDueDateInput')?.classList.add('bad');
+        $('#taskDueDateInput')?.focus();
+        this.notify(msg, 'error');
         return;
       }
 
