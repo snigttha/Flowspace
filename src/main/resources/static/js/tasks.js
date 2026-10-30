@@ -92,6 +92,9 @@
     saveAll(tasks) {
       try {
         localStorage.setItem(this.getKey(), JSON.stringify(tasks));
+        localStorage.setItem('flowspace_tasks_1', JSON.stringify(tasks));
+        localStorage.setItem('flowspace_tasks_0', JSON.stringify(tasks));
+        localStorage.setItem('flowspace_tasks_all', JSON.stringify(tasks));
       } catch (_) {}
       if (typeof DB !== 'undefined' && DB.d && Array.isArray(DB.d.tasks)) {
         try {

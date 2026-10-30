@@ -1,5 +1,5 @@
 /* FlowSpace Dashboard Controller (Member 6 + Member 3 Integration)
-   Consumes GET /api/analytics as the authoritative data source with robust offline fallback. */
+   Consumes GET /api/analytics as authoritative source with real-time task counter sync. */
 /* global window, document, fetch, Promise, localStorage, setTimeout, clearTimeout */
 
 window.pages = window.pages || {};
@@ -17,6 +17,69 @@ pages.dashboard = function () {
   const errorMsgEl = $('#dash-error-msg');
   const retryBtn   = $('#dash-retry-btn');
   const welcomeEl  = $('#welcome-state');
+
+  // Helper to extract auth headers for Spring Boot API requests
+  function getAuthHeaders() {
+    const headers = {};
+    try {
+      let uid = 0;
+      if (typeof Auth !== 'undefined' && typeof Auth.id === 'function') {
+        uid = Auth.id();
+      }
+      if (!uid && typeof Auth !== 'undefined' && Auth.me) {
+        uid = Auth.me.id || Auth.me.userId || 0;
+      }
+      if (!uid) {
+        uid = parseInt(localStorage.getItem('fs_session'), 10) || 0;
+      }
+      if (!uid) {
+        uid = 1;
+      }
+      headers['X-User-Id'] = String(uid);
+    } catch (_) {
+      headers['X-User-Id'] = '1';
+    }
+    return headers;
+  }
+
+  // Helper to retrieve tasks stored in browser localStorage
+  function getLocalTasks() {
+    const DB = (typeof window.DB !== 'undefined' && window.DB) ? window.DB : null;
+    let tasks = [];
+    try {
+      let uid = (typeof Auth !== 'undefined' && typeof Auth.id === 'function') ? Auth.id() : 0;
+      if (!uid && localStorage.getItem('fs_session')) {
+        uid = parseInt(localStorage.getItem('fs_session'), 10) || 0;
+      }
+      const candidates = [
+        'flowspace_tasks_' + uid,
+        'flowspace_tasks_1',
+        'flowspace_tasks_0',
+        'flowspace_tasks_all'
+      ];
+      for (const k of candidates) {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              tasks = parsed;
+              break;
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    if ((!tasks || tasks.length === 0) && DB && typeof DB.mine === 'function') {
+      try {
+        const mine = DB.mine('tasks');
+        if (Array.isArray(mine) && mine.length > 0) tasks = mine;
+        else if (DB.d && Array.isArray(DB.d.tasks) && DB.d.tasks.length > 0) tasks = DB.d.tasks;
+      } catch (_) {}
+    }
+    return tasks || [];
+  }
 
   // Greet user
   const Auth = (typeof window.Auth !== 'undefined' && window.Auth) ? window.Auth : null;
@@ -48,17 +111,24 @@ pages.dashboard = function () {
     if (errorEl) errorEl.style.display = 'none';
   }
 
-  function renderData(data) {
+  function renderData(data, extraTasks = []) {
     hideError();
 
     const DB = (typeof window.DB !== 'undefined' && window.DB) ? window.DB : null;
     const localNotes = (DB && typeof DB.mine === 'function') ? DB.mine('notes') : [];
     const localMoods = (DB && typeof DB.mine === 'function') ? DB.mine('moods') : [];
 
+    // Combine local tasks with any explicitly passed task items
+    const localTasks = extraTasks.length ? extraTasks : getLocalTasks();
+    const localOpenTasks = localTasks.filter(t => t.status !== 'DONE').length;
+    const localTotal = localTasks.length;
+    const localDone = localTasks.filter(t => t.status === 'DONE').length;
+
     // Counts
     const counts = data.counts || {};
     const notesCount = Math.max(counts.notes ?? 0, localNotes.length);
-    const openTasksCount = counts.open_tasks ?? counts.openTasks ?? 0;
+    const serverOpenTasks = counts.open_tasks ?? counts.openTasks ?? 0;
+    const openTasksCount = Math.max(serverOpenTasks, localOpenTasks);
     const moodsCount = Math.max(counts.moods ?? 0, localMoods.length);
 
     const sNotes = $('#sNotes'); if (sNotes) sNotes.textContent = notesCount;
@@ -82,9 +152,13 @@ pages.dashboard = function () {
 
     // Task completion meter
     const tasks = data.task_stats || data.taskStats || {};
-    const total = tasks.total ?? 0;
-    const completed = tasks.completed ?? 0;
-    const pct = tasks.completion_percentage ?? tasks.completionPercentage ?? 0;
+    let total = tasks.total ?? 0;
+    let completed = tasks.completed ?? 0;
+    if (total === 0 && localTotal > 0) {
+      total = localTotal;
+      completed = localDone;
+    }
+    let pct = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     const pctEl = $('#dash-completion-pct');
     if (pctEl) pctEl.textContent = `${pct}%`;
@@ -108,9 +182,10 @@ pages.dashboard = function () {
     // Recent activity list
     const listEl = $('#recent');
     let activity = data.recent_activity || data.recentActivity || [];
-    if (!activity.length && (localNotes.length || localMoods.length)) {
+    if (!activity.length && (localTasks.length || localNotes.length || localMoods.length)) {
       activity = [
         ...localNotes.map(n => ({ type: 'NOTE', title: 'Note: ' + n.title, formattedDate: ymd(n.updatedAt || n.createdAt) })),
+        ...localTasks.map(t => ({ type: 'TASK', title: 'Task: ' + t.title, formattedDate: ymd(t.createdAt || t.due_date || t.dueDate || Date.now()) })),
         ...localMoods.map(m => ({ type: 'WELLNESS', title: 'Wellness log for ' + fmt(m.date), formattedDate: m.date }))
       ].slice(0, 5);
     }
@@ -144,19 +219,7 @@ pages.dashboard = function () {
     const DB = (typeof window.DB !== 'undefined' && window.DB) ? window.DB : null;
     const notes = (DB && typeof DB.mine === 'function') ? (DB.mine('notes') || []) : [];
     const moods = (DB && typeof DB.mine === 'function') ? (DB.mine('moods') || []) : [];
-
-    let tasks = tasksList;
-    if (!tasks) {
-      const uid = (Auth && typeof Auth.id === 'function') ? Auth.id() : 1;
-      try {
-        const raw = localStorage.getItem('flowspace_tasks_' + uid);
-        if (raw) tasks = JSON.parse(raw);
-        else if (DB && typeof DB.mine === 'function') tasks = DB.mine('tasks') || [];
-      } catch (_) {
-        tasks = (DB && typeof DB.mine === 'function') ? (DB.mine('tasks') || []) : [];
-      }
-    }
-    tasks = tasks || [];
+    const tasks = tasksList || getLocalTasks();
 
     const doneTasks = tasks.filter(t => t.status === 'DONE').length;
     const openTasks = tasks.filter(t => t.status !== 'DONE').length;
@@ -187,29 +250,39 @@ pages.dashboard = function () {
         ...tasks.map(t => ({ type: 'TASK', title: 'Task: ' + t.title, formattedDate: ymd(t.createdAt || Date.now()) })),
         ...moods.map(m => ({ type: 'WELLNESS', title: 'Wellness log for ' + fmt(m.date), formattedDate: m.date }))
       ].slice(0, 5)
-    });
+    }, tasks);
   }
 
   function loadAnalytics() {
     showLoading(true);
     hideError();
 
-    // 1. First render instantly from local cache to avoid visual lag
+    // 1. Instantly render from local storage so UI is never blank
     renderOfflineFallback();
 
-    // 2. Fetch live analytics from backend
-    fetch('/api/analytics', { credentials: 'include' })
+    // 2. Fetch live analytics from /api/analytics with authorization headers
+    fetch('/api/analytics', { credentials: 'include', headers: getAuthHeaders() })
       .then(async res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then(data => {
         showLoading(false);
-        renderData(data);
+        // Also fetch live /api/tasks to make sure any task added via tasks.html is counted
+        fetch('/api/tasks', { credentials: 'include', headers: getAuthHeaders() })
+          .then(r => r.ok ? r.json() : [])
+          .then(apiTasks => {
+            if (Array.isArray(apiTasks) && apiTasks.length > 0) {
+              renderData(data, apiTasks);
+            } else {
+              renderData(data);
+            }
+          })
+          .catch(() => renderData(data));
       })
       .catch(() => {
         // Fallback: query /api/tasks directly
-        fetch('/api/tasks', { credentials: 'include' })
+        fetch('/api/tasks', { credentials: 'include', headers: getAuthHeaders() })
           .then(r => r.ok ? r.json() : [])
           .then(serverTasks => {
             showLoading(false);

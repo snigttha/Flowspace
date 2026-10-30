@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,6 @@ import javax.sql.DataSource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +48,10 @@ public class AnalyticsController {
         if (hUid != null && !hUid.isBlank()) {
             try { return Integer.parseInt(hUid.trim()); } catch (Exception ignored) {}
         }
+        String param = req.getParameter("userId");
+        if (param != null && !param.isBlank()) {
+            try { return Integer.parseInt(param.trim()); } catch (Exception ignored) {}
+        }
         return 1;
     }
 
@@ -63,12 +65,13 @@ public class AnalyticsController {
         List<Map<String, Object>> activities = new ArrayList<>();
 
         // 1. Query task metrics and recent activity from MySQL
-        String countSql = "SELECT status, COUNT(*) AS cnt FROM tasks WHERE user_id = ? GROUP BY status";
-        String recentSql = "SELECT title, status, created_at FROM tasks WHERE user_id = ? ORDER BY created_at DESC LIMIT 5";
+        String countSql = "SELECT status, COUNT(*) AS cnt FROM tasks WHERE user_id = ? OR (user_id = 0 AND ? = 1) GROUP BY status";
+        String recentSql = "SELECT title, status, created_at FROM tasks WHERE user_id = ? OR (user_id = 0 AND ? = 1) ORDER BY created_at DESC LIMIT 5";
 
         try (Connection conn = dataSource.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(countSql)) {
                 ps.setInt(1, userId);
+                ps.setInt(2, userId);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         String st = rs.getString("status");
@@ -82,6 +85,7 @@ public class AnalyticsController {
 
             try (PreparedStatement ps = conn.prepareStatement(recentSql)) {
                 ps.setInt(1, userId);
+                ps.setInt(2, userId);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         Map<String, Object> act = new LinkedHashMap<>();
