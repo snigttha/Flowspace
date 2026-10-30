@@ -2,6 +2,20 @@
    Consumes GET /api/analytics as the authoritative data source.
    Renders completion metrics, cycle stats, accessible mood trend chart,
    and personalized data-driven insights with empty and error states. */
+/* global window, document, fetch, Promise, localStorage, setTimeout, clearTimeout */
+
+// ── Global Helper Resolution ───────────────────────────────────────────
+window.pages = window.pages || {};
+const pages = window.pages;
+
+const $ = window.$ || ((s, r = document) => r.querySelector(s));
+const $$ = window.$$ || ((s, r = document) => [...r.querySelectorAll(s)]);
+const esc = window.esc || (s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])));
+const fmt = window.fmt || (d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-');
+const ymd = window.ymd || (ms => new Date(ms).toLocaleDateString('en-CA'));
+const label = window.label || (s => s ? s.charAt(0) + s.slice(1).toLowerCase().replace('_', ' ') : '');
+const avg = window.avg || (a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+const MOOD = window.MOOD || { HAPPY: 5, CALM: 4, NEUTRAL: 3, TIRED: 2, ANXIOUS: 2, IRRITABLE: 2, SAD: 1 };
 
 pages.analytics = function () {
   const loadingEl  = $('#analytics-loading');
@@ -148,7 +162,8 @@ pages.analytics = function () {
       .catch(err => {
         showLoading(false);
         // Fallback to local storage if API is offline
-        if (typeof DB !== 'undefined' && DB.mine) {
+        const DB = (typeof window.DB !== 'undefined' && window.DB) ? window.DB : null;
+        if (DB && typeof DB.mine === 'function') {
           try {
             renderOfflineFallback();
             return;
@@ -159,23 +174,27 @@ pages.analytics = function () {
   }
 
   function renderOfflineFallback() {
-    const tasks = DB.mine('tasks');
+    const DB = (typeof window.DB !== 'undefined' && window.DB) ? window.DB : null;
+    if (!DB || typeof DB.mine !== 'function') return;
+    const tasks = DB.mine('tasks') || [];
     const done = tasks.filter(x => x.status === 'DONE').length;
     const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
-    const today = (typeof FSV !== 'undefined' && FSV.today) ? FSV.today() : new Date().toISOString().slice(0, 10);
+    const FSV = (typeof window.FSV !== 'undefined' && window.FSV) ? window.FSV : null;
+    const today = (FSV && typeof FSV.today === 'function') ? FSV.today() : new Date().toISOString().slice(0, 10);
     const overdue = tasks.filter(x => x.status !== 'DONE' && x.due < today).length;
 
-    const moods = DB.mine('moods').sort((a, b) => a.date.localeCompare(b.date));
+    const moods = (DB.mine('moods') || []).sort((a, b) => a.date.localeCompare(b.date));
     const moodPoints = moods.map(m => ({
       date: m.date,
       mood: m.mood,
-      score: (typeof MOOD !== 'undefined' && MOOD[m.mood]) ? MOOD[m.mood] : 3,
+      score: (MOOD && MOOD[m.mood]) ? MOOD[m.mood] : 3,
       painLevel: m.pain || 0,
       sleepHours: m.sleep || 0,
       waterIntake: m.water || 0
     }));
 
-    const c = (typeof cycleInfo === 'function') ? cycleInfo() : null;
+    const cycleFn = (typeof window.cycleInfo === 'function') ? window.cycleInfo : (typeof cycleInfo === 'function' ? cycleInfo : null);
+    const c = cycleFn ? cycleFn() : null;
     const ins = [];
     if (moods.length >= 3) {
       ins.push(`Across ${moods.length} entries you average ${avg(moods.map(x => x.sleep)).toFixed(1)} hours of sleep, ${avg(moods.map(x => x.water)).toFixed(1)} glasses of water and pain level ${avg(moods.map(x => x.pain)).toFixed(1)}/10.`);
@@ -211,4 +230,3 @@ pages.analytics = function () {
 
   loadInsights();
 };
-

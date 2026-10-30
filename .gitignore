@@ -1,8 +1,8 @@
 HELP.md
 target/
+**/target/
+backend/target/
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
 ### STS ###
 .apt_generated
@@ -26,13 +26,13 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+
 ### FlowSpace ###
 .env
 *.log
 log.txt
 *.db
+flowspace.db
