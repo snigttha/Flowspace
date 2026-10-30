@@ -62,6 +62,13 @@ function cycleInfo() {
   return { avg: len, count: p.length, last: last.start, next: addDays(last.start, len) };
 }
 
+async function getCyclePrediction() {
+  const response = await fetch(`${API}/periods/prediction`, { credentials: 'include' });
+  const prediction = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(prediction.error || 'Could not load cycle prediction.');
+  return prediction;
+}
+
 /* Page scripts fill this in. */
 const pages = {};
 
