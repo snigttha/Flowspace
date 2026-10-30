@@ -31,6 +31,13 @@ public class PeriodLog extends WorkspaceItem {
     /** Default constructor for DAO hydration. */
     public PeriodLog() {}
 
+    private LocalDate cycleStartDate;
+    private int cycleLength;
+
+    public PeriodLog() {
+        setCreatedAt(LocalDateTime.now());
+    }
+
     public PeriodLog(int userId, LocalDate cycleStartDate, int cycleLength) {
         setUserId(userId);
         setCycleStartDate(cycleStartDate);
@@ -53,12 +60,20 @@ public class PeriodLog extends WorkspaceItem {
         if (cycleStartDate == null) {
             throw new IllegalArgumentException("Cycle start date is required.");
         }
+        validate();
+    }
+
+    @Override
+    public void validate() {
+        if (getUserId() <= 0) throw new IllegalArgumentException("A valid user is required.");
+        if (cycleStartDate == null) throw new IllegalArgumentException("Cycle start date is required.");
         if (cycleStartDate.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Cycle start date cannot be in the future.");
         }
         if (cycleLength < MIN_CYCLE_LENGTH || cycleLength > MAX_CYCLE_LENGTH) {
             throw new IllegalArgumentException(
                 "Cycle length must be between " + MIN_CYCLE_LENGTH + " and " + MAX_CYCLE_LENGTH + " days.");
+            throw new IllegalArgumentException("Cycle length must be between 15 and 60 days.");
         }
     }
 
@@ -109,3 +124,14 @@ public class PeriodLog extends WorkspaceItem {
     }
 }
 
+        return "[Period] Start date " + cycleStartDate + " (" + cycleLength + " day cycle)";
+    }
+
+    public LocalDate getCycleStartDate() { return cycleStartDate; }
+
+    public void setCycleStartDate(LocalDate cycleStartDate) { this.cycleStartDate = cycleStartDate; }
+
+    public int getCycleLength() { return cycleLength; }
+
+    public void setCycleLength(int cycleLength) { this.cycleLength = cycleLength; }
+}
