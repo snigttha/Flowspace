@@ -1,0 +1,460 @@
+/* FlowSpace: Dashboard and Analytics Stylesheet
+   Maintains plum, rose, deep, sand palette with Fraunces & DM Sans typography.
+   WCAG 2.1 AA accessible contrast and visible keyboard focus.
+   Responsive at 375px, 768px, and 1280px viewports. */
+
+/* ── States: Loading, Error, Welcome ───────────────────────────────────── */
+.dash-state {
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.2rem;
+  border-radius: var(--r);
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.error-state {
+  border-left: 5px solid var(--bad);
+  background: #fff8f8;
+  color: var(--bad);
+}
+
+.error-state p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.welcome-box {
+  background: linear-gradient(135deg, rgba(247, 235, 237, 0.7) 0%, rgba(236, 227, 212, 0.5) 100%);
+  border: 1px solid var(--rose);
+  border-left: 5px solid var(--plum);
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 1.4rem;
+  border-radius: var(--r);
+}
+
+.welcome-box h2 {
+  color: var(--deep);
+  font-size: 1.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.welcome-box p {
+  color: var(--mute);
+  margin: 0 0 0.9rem;
+  line-height: 1.5;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.welcome-actions .btn {
+  text-decoration: none;
+  font-size: 0.88rem;
+  padding: 0.45rem 1rem;
+}
+
+/* ── Stat Cards ────────────────────────────────────────────────────────── */
+.stat-card-row {
+  margin-bottom: 1.3rem;
+}
+
+.stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--plum);
+  border-radius: var(--r);
+  padding: 1.25rem 1.3rem;
+  box-shadow: var(--shadow);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  min-height: 110px;
+}
+
+.stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(59, 23, 39, 0.12), 0 14px 28px -12px rgba(59, 23, 39, 0.2);
+}
+
+.stat:focus-visible {
+  outline: 3px solid var(--plum);
+  outline-offset: 3px;
+}
+
+.stat b {
+  display: block;
+  font: 700 2.4rem/1.1 var(--serif);
+  color: var(--deep);
+  margin-bottom: 0.3rem;
+}
+
+.stat span.stat-label {
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: var(--mute);
+}
+
+.stat-icon {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  font-size: 1.1rem;
+  color: var(--rose);
+  opacity: 0.8;
+}
+
+.g4 .stat:nth-child(1) { border-top-color: var(--plum); }
+.g4 .stat:nth-child(2) { border-top-color: var(--rose); }
+.g4 .stat:nth-child(3) { border-top-color: var(--sage); }
+.g4 .stat:nth-child(4) { border-top-color: #d19a66; }
+
+/* ── Task Completion & Meter ───────────────────────────────────────────── */
+.completion-card {
+  padding: 1.4rem 1.6rem;
+}
+
+.completion-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.completion-pct {
+  font: 700 1.5rem var(--serif);
+  color: var(--deep);
+}
+
+.meter {
+  background: var(--sand);
+  border-radius: 999px;
+  height: 16px;
+  margin: 0.4rem 0 0.8rem;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.meter i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rose) 0%, var(--plum) 100%);
+  border-radius: 999px;
+  transition: width 0.5s ease-in-out;
+  min-width: 0%;
+}
+
+.meter-sub {
+  margin: 0.3rem 0 0;
+  font-size: 0.88rem;
+  color: var(--mute);
+}
+
+/* ── Recent Activity ───────────────────────────────────────────────────── */
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.4rem;
+  border-bottom: 1px solid var(--line);
+  gap: 0.8rem;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.activity-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.badge-NOTE { background: #e8ddeb; color: #532345; }
+.badge-TASK { background: #e3ecf5; color: #1e4566; }
+.badge-WELLNESS { background: #e4f2e7; color: #1f562b; }
+.badge-CYCLE { background: #fae4eb; color: #7a1d3a; }
+
+.activity-title {
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-date {
+  font-size: 0.84rem;
+  color: var(--mute);
+  flex-shrink: 0;
+}
+
+/* ── Mood Trend Chart ──────────────────────────────────────────────────── */
+.trend-container {
+  padding: 1rem 0.5rem 0.5rem;
+}
+
+.trend {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 180px;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.trend .col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.trend-bar-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.trend i {
+  display: block;
+  width: 75%;
+  max-width: 38px;
+  background: linear-gradient(180deg, var(--rose) 0%, var(--plum) 100%);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.4s ease, filter 0.2s ease;
+  min-height: 8px;
+  cursor: pointer;
+}
+
+.trend i:hover {
+  filter: brightness(1.15);
+}
+
+.trend .col small {
+  font-size: 0.78rem;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.trend-score-pill {
+  position: absolute;
+  top: -24px;
+  background: var(--deep);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.trend .col:hover .trend-score-pill {
+  opacity: 1;
+}
+
+.trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+  font-size: 0.8rem;
+  color: var(--mute);
+}
+
+.trend-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.trend-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--plum);
+}
+
+/* ── Cycle Statistics Card ─────────────────────────────────────────────── */
+.cycle-stat-highlight {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.cycle-stat-days {
+  font: 700 2.2rem/1 var(--serif);
+  color: var(--deep);
+}
+
+.cycle-pill {
+  display: inline-block;
+  background: var(--blush);
+  color: var(--plum);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(107, 45, 69, 0.2);
+  margin-top: 0.3rem;
+}
+
+/* ── Insights List ─────────────────────────────────────────────────────── */
+.insight-list {
+  padding-left: 1.2rem;
+  margin: 0;
+}
+
+.insight-list li {
+  padding: 0.5rem 0;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.insight-list li strong {
+  color: var(--deep);
+}
+
+/* ── Responsive Viewport Optimizations ─────────────────────────────────── */
+
+/* Desktop view (default 1040px max width container) */
+@media (min-width: 1040px) {
+  .grid.g4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .grid.g2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Tablet view (768px - 1039px) */
+@media (max-width: 1039px) and (min-width: 641px) {
+  .shell {
+    grid-template-columns: 220px 1fr;
+  }
+  main {
+    padding: 1.8rem 1.6rem;
+  }
+  .grid.g4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .grid.g2 {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+  }
+  .stat b {
+    font-size: 2.1rem;
+  }
+}
+
+/* Mobile phone view (<= 640px down to 375px) */
+@media (max-width: 640px) {
+  .shell {
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+  }
+  nav.side {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    padding: 0.85rem 1rem;
+  }
+  nav.side .brand {
+    font-size: 1.35rem;
+    margin: 0 0.5rem 0 0;
+  }
+  nav.side .who {
+    display: none;
+  }
+  nav.side .btn {
+    width: auto;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+  }
+  nav.side a {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.88rem;
+  }
+  main {
+    padding: 1.1rem 0.9rem 2rem;
+  }
+  h1 {
+    font-size: 1.65rem;
+  }
+  .grid.g4,
+  .grid.g2,
+  .grid.g3 {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+  .stat {
+    padding: 1rem 1.1rem;
+    min-height: auto;
+  }
+  .stat b {
+    font-size: 2rem;
+  }
+  .trend {
+    height: 150px;
+    gap: 6px;
+  }
+  .trend i {
+    max-width: 28px;
+  }
+  .activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  .activity-date {
+    align-self: flex-end;
+    font-size: 0.78rem;
+  }
+}
+

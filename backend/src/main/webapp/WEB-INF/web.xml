@@ -3,23 +3,84 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
                              https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-         version="6.0">
+         version="6.0"
+         metadata-complete="true">
 
   <display-name>FlowSpace</display-name>
-  <description>Notes, tasks and wellness tracker</description>
+  <description>Notes, tasks, wellness and analytics tracker</description>
 
-  <!-- Default welcome file (serves the login / landing page) -->
+  <!-- Default welcome file -->
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
   </welcome-file-list>
+
+  <!-- Servlets -->
+  <servlet>
+    <servlet-name>AuthServlet</servlet-name>
+    <servlet-class>com.flowspace.api.AuthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AuthServlet</servlet-name>
+    <url-pattern>/api/register</url-pattern>
+    <url-pattern>/api/login</url-pattern>
+    <url-pattern>/api/logout</url-pattern>
+    <url-pattern>/api/me</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>NoteServlet</servlet-name>
+    <servlet-class>com.flowspace.api.NoteServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>NoteServlet</servlet-name>
+    <url-pattern>/api/notes</url-pattern>
+    <url-pattern>/api/notes/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>TaskServlet</servlet-name>
+    <servlet-class>com.flowspace.api.TaskServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TaskServlet</servlet-name>
+    <url-pattern>/api/tasks</url-pattern>
+    <url-pattern>/api/tasks/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>PeriodServlet</servlet-name>
+    <servlet-class>com.flowspace.api.PeriodServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PeriodServlet</servlet-name>
+    <url-pattern>/api/periods</url-pattern>
+    <url-pattern>/api/periods/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>MoodServlet</servlet-name>
+    <servlet-class>com.flowspace.api.MoodServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>MoodServlet</servlet-name>
+    <url-pattern>/api/moods</url-pattern>
+    <url-pattern>/api/moods/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>AnalyticsServlet</servlet-name>
+    <servlet-class>com.flowspace.api.AnalyticsServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AnalyticsServlet</servlet-name>
+    <url-pattern>/api/analytics</url-pattern>
+  </servlet-mapping>
 
   <!-- Session: 30-minute timeout -->
   <session-config>
     <session-timeout>30</session-timeout>
     <cookie-config>
       <http-only>true</http-only>
-      <!-- Enable secure flag in production (HTTPS only) -->
-      <!-- <secure>true</secure> -->
     </cookie-config>
   </session-config>
 

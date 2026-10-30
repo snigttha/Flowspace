@@ -1,7 +1,22 @@
-C:\Users\91773\Downloads\flowspace split\flowspace\backend\src\main\java\com\flowspace\api\NoteServlet.java
-C:\Users\91773\Downloads\flowspace split\flowspace\backend\src\main\java\com\flowspace\dao\Dao.java
-C:\Users\91773\Downloads\flowspace split\flowspace\backend\src\main\java\com\flowspace\dao\NoteDAO.java
-C:\Users\91773\Downloads\flowspace split\flowspace\backend\src\main\java\com\flowspace\db\DBConnection.java
-C:\Users\91773\Downloads\flowspace split\flowspace\backend\src\main\java\com\flowspace\model\Note.java
-C:\Users\91773\Downloads\flowspace split\flowspace\backend\src\main\java\com\flowspace\model\WorkspaceItem.java
-C:\Users\91773\Downloads\flowspace split\flowspace\backend\src\main\java\com\flowspace\service\NoteManager.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\api\AnalyticsServlet.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\api\AuthServlet.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\api\MoodServlet.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\api\NoteServlet.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\api\PeriodServlet.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\api\TaskServlet.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\dao\Dao.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\dao\MoodEntryDAO.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\dao\NoteDAO.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\dao\PeriodLogDAO.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\dao\TaskDAO.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\dao\UserDAO.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\db\DBConnection.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\model\AnalyticsData.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\model\MoodEntry.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\model\Note.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\model\PeriodLog.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\model\Task.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\model\Workspace.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\model\WorkspaceItem.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\service\AnalyticsService.java
+C:\Users\DELL\OneDrive\Documents\OOPS_FLOWSPACE\Flowspace\backend\src\main\java\com\flowspace\service\NoteManager.java

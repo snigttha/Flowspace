@@ -1,14 +1,83 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard - FlowSpace</title><link rel="stylesheet" href="css/style.css"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - FlowSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
 <body data-page="dashboard">
-<div class="shell"><nav class="side" id="nav"></nav><main>
-<h1>Hello, <span id="name"></span></h1><p class="sub">Here is where things stand today.</p>
-<div class="grid g4">
-<a class="card stat" href="notes.html"><b id="sNotes">0</b>Notes</a>
-<a class="card stat" href="tasks.html"><b id="sTasks">0</b>Open tasks</a>
-<a class="card stat" href="wellness.html"><b id="sMoods">0</b>Wellness logs</a>
-<a class="card stat" href="wellness.html"><b id="sNext" style="font-size:1.1rem">-</b>Next period</a></div>
-<section class="card"><h2>Recent activity</h2><ul id="recent"></ul></section>
-</main></div>
-<script src="js/validate.js"></script><script src="js/core.js"></script><script src="js/dashboard.js"></script></body></html>
+  <div class="shell">
+    <nav class="side" id="nav" aria-label="Main Navigation"></nav>
+    <main>
+      <h1>Hello, <span id="name"></span></h1>
+      <p class="sub">Here is where things stand today.</p>
+
+      <!-- Loading State -->
+      <div id="dash-loading" class="dash-state" style="display:none;" aria-live="polite">
+        <span>Loading your workspace metrics...</span>
+      </div>
+
+      <!-- Error State -->
+      <div id="dash-error" class="dash-state error-state" style="display:none;" role="alert">
+        <p id="dash-error-msg">Could not load dashboard data from server.</p>
+        <button class="btn ghost" id="dash-retry-btn" type="button">Retry</button>
+      </div>
+
+      <!-- Welcome State for New Users -->
+      <section id="welcome-state" class="welcome-box" style="display:none;">
+        <h2>Welcome to FlowSpace!</h2>
+        <p>Your workspace is fresh and ready. Create your first note, organize tasks on the board, or log today's wellness entry to begin unlocking personalized insights.</p>
+        <div class="welcome-actions">
+          <a class="btn" href="notes.html">+ New note</a>
+          <a class="btn ghost" href="tasks.html">+ Add task</a>
+          <a class="btn ghost" href="wellness.html">Log wellness</a>
+        </div>
+      </section>
+
+      <!-- Stat Cards Grid -->
+      <div class="grid g4 stat-card-row">
+        <a class="stat" href="notes.html" id="cardNotes" aria-label="View notes">
+          <b id="sNotes">0</b>
+          <span class="stat-label">Notes</span>
+        </a>
+        <a class="stat" href="tasks.html" id="cardTasks" aria-label="View open tasks">
+          <b id="sTasks">0</b>
+          <span class="stat-label">Open tasks</span>
+        </a>
+        <a class="stat" href="wellness.html" id="cardMoods" aria-label="View wellness entries">
+          <b id="sMoods">0</b>
+          <span class="stat-label">Wellness logs</span>
+        </a>
+        <a class="stat" href="wellness.html" id="cardNext" aria-label="View cycle prediction">
+          <b id="sNext" style="font-size:1.4rem;">-</b>
+          <span class="stat-label">Next period</span>
+        </a>
+      </div>
+
+      <!-- Task Completion Meter Card -->
+      <section class="card completion-card" id="task-completion-card">
+        <div class="completion-info">
+          <h2>Task completion</h2>
+          <span class="completion-pct" id="dash-completion-pct">0%</span>
+        </div>
+        <div class="meter" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Task completion progress">
+          <i id="dash-meter-bar" style="width: 0%;"></i>
+        </div>
+        <p class="meter-sub" id="dash-task-sub">0 of 0 tasks completed</p>
+      </section>
+
+      <!-- Recent Activity Section -->
+      <section class="card">
+        <h2>Recent activity</h2>
+        <ul id="recent" class="activity-list" aria-label="List of recent activities"></ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/validate.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
