@@ -39,6 +39,10 @@ public class AuthServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
     private final Gson gson = new Gson();
 
+    // In-memory brute force rate limiters (5 attempts / 60 seconds)
+    private final RateLimiter loginLimiter = new RateLimiter(5, 60_000);
+    private final RateLimiter registerLimiter = new RateLimiter(5, 60_000);
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
@@ -82,11 +86,18 @@ public class AuthServlet extends HttpServlet {
             out.put("email", u.getEmail());
             sendJson(resp, HttpServletResponse.SC_OK, out);
         } catch (SQLException e) {
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
+            System.err.println("Database error in /api/me: " + e.getMessage());
+            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An internal error occurred. Please try again.");
         }
     }
 
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String clientIp = getClientIp(req);
+        if (!registerLimiter.isAllowed(clientIp)) {
+            sendError(resp, 429, "Too many registration attempts. Please wait a minute and try again.");
+            return;
+        }
+
         JsonObject body = parseBody(req, resp);
         if (body == null) return;
 
@@ -112,11 +123,18 @@ public class AuthServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException e) {
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Registration failed: " + e.getMessage());
+            System.err.println("Registration database failure: " + e.getMessage());
+            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Registration failed. Please check your information and try again.");
         }
     }
 
     private void handleLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String clientIp = getClientIp(req);
+        if (loginLimiter.isBlocked(clientIp)) {
+            sendError(resp, 429, "Too many failed login attempts. Please wait a minute and try again.");
+            return;
+        }
+
         JsonObject body = parseBody(req, resp);
         if (body == null) return;
 
@@ -126,9 +144,13 @@ public class AuthServlet extends HttpServlet {
         try {
             UserRecord user = userDAO.authenticate(email, password);
             if (user == null) {
+                loginLimiter.recordFailure(clientIp);
                 sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Email or password is incorrect.");
                 return;
             }
+
+            // Successful authentication: clear failure count
+            loginLimiter.reset(clientIp);
 
             if (req.getSession(false) != null) {
                 req.changeSessionId();
@@ -143,7 +165,8 @@ public class AuthServlet extends HttpServlet {
             out.put("email", user.getEmail());
             sendJson(resp, HttpServletResponse.SC_OK, out);
         } catch (SQLException e) {
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Login failed: " + e.getMessage());
+            System.err.println("Login database failure: " + e.getMessage());
+            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Login failed due to an internal error. Please try again.");
         }
     }
 
@@ -159,9 +182,17 @@ public class AuthServlet extends HttpServlet {
         try {
             return JsonParser.parseReader(req.getReader()).getAsJsonObject();
         } catch (Exception e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON body: " + e.getMessage());
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format in request body.");
             return null;
         }
+    }
+
+    private String getClientIp(HttpServletRequest req) {
+        String forwarded = req.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return req.getRemoteAddr() != null ? req.getRemoteAddr() : "unknown";
     }
 
     private String jsonString(JsonObject obj, String key) {

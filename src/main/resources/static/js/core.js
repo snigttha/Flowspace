@@ -31,7 +31,16 @@ const Auth = {
   logout() {
     fetch(`${API}/logout`, { method: 'POST', credentials: 'include' })
       .catch(() => {})
-      .finally(() => { localStorage.removeItem('fs_session'); location.href = 'index.html'; });
+      .finally(() => {
+        try {
+          localStorage.removeItem('fs_session');
+          localStorage.removeItem('flowspace');
+          if (typeof DB !== 'undefined') {
+            DB.d = empty();
+          }
+        } catch (e) {}
+        location.href = 'index.html';
+      });
   }
 };
 

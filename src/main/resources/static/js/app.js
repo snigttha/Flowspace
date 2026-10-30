@@ -29,6 +29,10 @@ const Auth = {
   logout() {
     fetch('/api/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     localStorage.removeItem('fs_session');
+    try {
+      localStorage.removeItem('flowspace');
+      DB.d = empty();
+    } catch (e) {}
     location.href = 'index.html';
   }
 };
@@ -80,7 +84,7 @@ const pages = {
       .then(user => {
         let u = DB.d.users.find(x => x.email === user.email);
         if (!u) {
-          u = { id: user.userId, name: user.name, email: user.email, password: v.password, createdAt: Date.now() };
+          u = { id: user.userId, name: user.name, email: user.email, createdAt: Date.now() };
           DB.d.users.push(u);
         } else {
           u.id = user.userId;
@@ -91,10 +95,7 @@ const pages = {
         location.href = 'dashboard.html';
       })
       .catch(err => {
-        const u = DB.d.users.find(u => u.email === v.email.trim().toLowerCase() && u.password === v.password);
-        if (!u) return FSV.fail(f, 'password', err.message || 'Email or password is incorrect.');
-        Auth.login(u.id);
-        location.href = 'dashboard.html';
+        return FSV.fail(f, 'password', err.message || 'Email or password is incorrect.');
       });
     });
   },
@@ -116,7 +117,7 @@ const pages = {
         return res.json();
       })
       .then(user => {
-        const u = { id: user.userId, name: user.name, email, password: v.password, createdAt: Date.now() };
+        const u = { id: user.userId, name: user.name, email, createdAt: Date.now() };
         DB.d.users.push(u);
         DB.save();
         Auth.login(user.userId);
@@ -124,7 +125,7 @@ const pages = {
       })
       .catch(err => {
         if (DB.d.users.some(u => u.email === email)) return FSV.fail(f, 'email', err.message || 'An account with this email already exists.');
-        const u = DB.add('users', { name: v.name.trim(), email, password: v.password, createdAt: Date.now() });
+        const u = DB.add('users', { name: v.name.trim(), email, createdAt: Date.now() });
         Auth.login(u.id);
         location.href = 'dashboard.html';
       });

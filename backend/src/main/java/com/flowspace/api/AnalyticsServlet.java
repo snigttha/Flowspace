@@ -103,7 +103,12 @@ public class AnalyticsServlet extends HttpServlet {
 
     private void sendError(HttpServletResponse resp, int status, String message)
             throws IOException {
-        sendJson(resp, status, Map.of("error", message, "message", message));
+        String clientMsg = message;
+        if (status >= 500) {
+            System.err.println("AnalyticsServlet Error [" + status + "]: " + message);
+            clientMsg = "An internal server error occurred while loading analytics. Please try again later.";
+        }
+        sendJson(resp, status, Map.of("error", clientMsg, "message", clientMsg));
     }
 }
 

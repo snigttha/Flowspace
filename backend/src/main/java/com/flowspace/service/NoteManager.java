@@ -32,8 +32,8 @@ public class NoteManager {
         this.dao = new NoteDAO();
     }
 
-    /** Package-private constructor for unit-testing with a mock DAO. */
-    NoteManager(NoteDAO dao) {
+    /** Constructor for unit and security testing with a mock DAO. */
+    public NoteManager(NoteDAO dao) {
         this.dao = dao;
     }
 

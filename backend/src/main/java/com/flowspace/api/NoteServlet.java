@@ -192,7 +192,7 @@ public class NoteServlet extends HttpServlet {
             return JsonParser.parseReader(req.getReader()).getAsJsonObject();
         } catch (Exception e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
-                      "Invalid JSON body: " + e.getMessage());
+                      "Invalid JSON format in request body.");
             return null;
         }
     }
@@ -213,7 +213,12 @@ public class NoteServlet extends HttpServlet {
 
     private void sendError(HttpServletResponse resp, int status, String message)
             throws IOException {
-        sendJson(resp, status, Map.of("error", message, "message", message));
+        String clientMsg = message;
+        if (status >= 500) {
+            System.err.println("NoteServlet Error [" + status + "]: " + message);
+            clientMsg = "An internal server error occurred. Please try again later.";
+        }
+        sendJson(resp, status, Map.of("error", clientMsg, "message", clientMsg));
     }
 
     // ── Note → JSON serialisation (field names match SQL columns) ────────

@@ -182,7 +182,7 @@ public class TaskServlet extends HttpServlet {
         try {
             return JsonParser.parseReader(req.getReader()).getAsJsonObject();
         } catch (Exception e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON body: " + e.getMessage());
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format in request body.");
             return null;
         }
     }
@@ -200,7 +200,12 @@ public class TaskServlet extends HttpServlet {
     }
 
     private void sendError(HttpServletResponse resp, int status, String message) throws IOException {
-        sendJson(resp, status, Map.of("error", message, "message", message));
+        String clientMsg = message;
+        if (status >= 500) {
+            System.err.println("TaskServlet Error [" + status + "]: " + message);
+            clientMsg = "An internal server error occurred. Please try again later.";
+        }
+        sendJson(resp, status, Map.of("error", clientMsg, "message", clientMsg));
     }
 
     private Map<String, Object> taskToJson(Task t) {

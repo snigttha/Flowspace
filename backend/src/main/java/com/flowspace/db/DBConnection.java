@@ -48,6 +48,12 @@ public class DBConnection {
             conn = DriverManager.getConnection(url);
         }
 
+        if (url.startsWith("jdbc:sqlite:")) {
+            try (Statement st = conn.createStatement()) {
+                st.execute("PRAGMA foreign_keys = ON;");
+            }
+        }
+
         if (!schemaInitialized && url.startsWith("jdbc:sqlite:") && !url.contains("mode=memory")) {
             synchronized (DBConnection.class) {
                 if (!schemaInitialized) {
