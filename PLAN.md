@@ -82,7 +82,7 @@ Your proposal promises encapsulation, inheritance, polymorphism and abstraction,
 - Frontend (cycle half of `wellness.html`): replace browser storage with `fetch`; month calendar; cycle form; show the server's prediction message; clear errors for bad dates and lengths.
 - Styling (`css/wellness.css`, cycle part): calendar grid with distinct markers for a logged start and the predicted date plus a legend; prediction banner; month navigation buttons. Agree the wellness page layout with Member 5.
 - Java: `PeriodLog` extends `WorkspaceItem`; `PeriodTracker` with `logCycle()` and `predictNextPeriod()`; prediction = average gap between logged start dates, limited to 15 to 60 days, added to the latest start date (one log: use the entered length); `PeriodLogDAO` (same start date updates the row); validation (date not in the future, length 15 to 60).
-- Database: all cycles of a user by date; latest cycle; decide whether to store `predicted_next_date` or compute it, and tell Member 6.
+- Database: all cycles of a user by date; latest cycle. Prediction is computed from owned cycle rows on request; `predicted_next_date` remains unused to avoid stale stored predictions. Member 6 should consume `GET /api/periods/prediction` (`predicted_next_date`, `average_cycle_days`, and `logged_cycles`).
 - Tests: prediction with 0, 1, 2 and 5 logs and odd gaps; treat the data as sensitive and test that only the owner can read it.
 - Docs: the project test plan.
 - Done when: cycles can be logged and edited, the calendar shows them, and the prediction updates as cycles are added.

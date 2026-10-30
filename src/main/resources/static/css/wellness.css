@@ -1,0 +1,18 @@
+.prediction{margin:0 0 1.25rem;padding:.85rem 1rem;border-left:4px solid var(--sage);background:#e8f0ea;color:#244b35;border-radius:4px;font-weight:500}
+.cycle-card{min-width:0}
+.month-nav{min-height:2.5rem}
+.month-nav h2{margin:0;text-align:center}
+#cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center;margin:1rem 0 .65rem}
+#cal b,#cal .cycle-date,#cal>span[aria-hidden=true]{display:grid;place-items:center;aspect-ratio:1;min-width:0;padding:0;border-radius:50%}
+#cal b{color:var(--mute);font-size:.78rem;font-weight:500}
+#cal .cycle-date{font-size:.88rem;color:var(--ink);background:transparent}
+#cal .cycle-start{background:var(--plum);color:#fff;font-weight:700}
+#cal .cycle-predicted{outline:2px dashed #47745b;outline-offset:-3px;color:#244b35;font-weight:700}
+.cycle-legend{display:flex;flex-wrap:wrap;gap:.65rem 1.2rem;list-style:none;padding:0;margin:.6rem 0 1.1rem;color:var(--mute);font-size:.84rem}
+.cycle-legend li{display:flex;align-items:center;gap:.45rem}
+.cycle-legend span{display:inline-block;width:.78rem;height:.78rem;border-radius:50%;flex:none}
+.legend-start{background:var(--plum)}
+.legend-predicted{border:2px dashed #47745b}
+#cycleLoading:empty{display:none}
+#cycle button:disabled{opacity:.65;cursor:wait}
+@media(max-width:420px){#cal{gap:2px}.cycle-legend{gap:.4rem .8rem}}
