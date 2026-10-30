@@ -26,7 +26,7 @@ const DB = {
 const API = '/api';
 const Auth = {
   me: null,
-  id: () => (Auth.me ? (Auth.me.id ?? Auth.me.email) : 0),
+  id: () => (Auth.me ? (Auth.me.id ?? Auth.me.userId ?? Auth.me.email) : 0),
   user: () => Auth.me,
   logout() {
     fetch(`${API}/logout`, { method: 'POST', credentials: 'include' })
@@ -49,8 +49,9 @@ document.addEventListener('input', e => { if (e.target.type === 'range') sliders
 
 function nav(page) {
   const P = [['dashboard', 'Dashboard'], ['notes', 'Notes'], ['tasks', 'Tasks'], ['wellness', 'Wellness'], ['analytics', 'Insights']];
+  const uName = (Auth.user() && Auth.user().name) ? Auth.user().name : (Auth.me && Auth.me.name) ? Auth.me.name : 'User';
   $('#nav').innerHTML = '<div class="brand">FlowSpace</div>' + P.map(([p, l]) => `<a href="${p}.html" class="${p === page ? 'on' : ''}">${l}</a>`).join('') +
-    `<p class="who">${esc(Auth.user().name)}</p><button class="btn ghost" id="out">Log out</button>`;
+    `<p class="who">${esc(uName)}</p><button class="btn ghost" id="out">Log out</button>`;
   $('#out').onclick = Auth.logout;
 }
 

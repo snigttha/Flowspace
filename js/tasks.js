@@ -65,6 +65,92 @@
   }
 
   /* ──────────────────────────────────────────────
+     LocalTaskStore – robust browser persistence
+  ────────────────────────────────────────────── */
+  const LocalTaskStore = {
+    getKey() {
+      let uid = '1';
+      try {
+        if (typeof Auth !== 'undefined' && typeof Auth.id === 'function') uid = String(Auth.id());
+        else if (localStorage.getItem('fs_session')) uid = String(localStorage.getItem('fs_session'));
+      } catch (_) {}
+      return 'flowspace_tasks_' + uid;
+    },
+    getAll() {
+      try {
+        const raw = localStorage.getItem(this.getKey());
+        if (raw) return JSON.parse(raw);
+      } catch (_) {}
+      if (typeof DB !== 'undefined' && typeof DB.mine === 'function') {
+        try {
+          const d = DB.mine('tasks');
+          if (d && d.length) return d;
+        } catch (_) {}
+      }
+      return [];
+    },
+    saveAll(tasks) {
+      try {
+        localStorage.setItem(this.getKey(), JSON.stringify(tasks));
+      } catch (_) {}
+      if (typeof DB !== 'undefined' && DB.d && Array.isArray(DB.d.tasks)) {
+        try {
+          const uid = parseInt(this.getKey().replace('flowspace_tasks_', ''), 10) || 1;
+          DB.d.tasks = DB.d.tasks.filter(t => t.userId !== uid).concat(tasks);
+          if (typeof DB.save === 'function') DB.save();
+        } catch (_) {}
+      }
+    }
+  };
+
+  /* ──────────────────────────────────────────────
+     Sidebar navigation helper (ensures sidebar is never blank)
+  ────────────────────────────────────────────── */
+  function ensureSidebar() {
+    const navEl = $('#nav');
+    if (!navEl) return;
+    if (navEl.children.length === 0 || !navEl.querySelector('.brand')) {
+      if (typeof nav === 'function') {
+        try { nav('tasks'); } catch (_) {}
+      }
+      if (navEl.children.length === 0 || !navEl.querySelector('.brand')) {
+        let uName = 'User';
+        try {
+          if (typeof Auth !== 'undefined' && typeof Auth.user === 'function' && Auth.user() && Auth.user().name) {
+            uName = Auth.user().name;
+          } else if (localStorage.getItem('fs_user')) {
+            const u = JSON.parse(localStorage.getItem('fs_user'));
+            if (u && u.name) uName = u.name;
+          }
+        } catch (_) {}
+
+        const navLinks = [
+          ['dashboard', 'Dashboard'],
+          ['notes', 'Notes'],
+          ['tasks', 'Tasks'],
+          ['wellness', 'Wellness'],
+          ['analytics', 'Insights']
+        ];
+
+        navEl.innerHTML = '<div class="brand">FlowSpace</div>' +
+          navLinks.map(([p, l]) => `<a href="${p}.html" class="${p === 'tasks' ? 'on' : ''}">${l}</a>`).join('') +
+          `<p class="who">${esc(uName)}</p><button class="btn ghost" id="out">Log out</button>`;
+
+        const outBtn = $('#out');
+        if (outBtn) {
+          outBtn.onclick = () => {
+            if (typeof Auth !== 'undefined' && typeof Auth.logout === 'function') {
+              Auth.logout();
+            } else {
+              location.href = 'index.html';
+            }
+          };
+        }
+      }
+    }
+  }
+
+  /* ──────────────────────────────────────────────
      TasksAPI  – abstraction over fetch / localStorage
   ────────────────────────────────────────────── */
   const TasksAPI = {
@@ -79,19 +165,15 @@
             headers: getAuthHeaders()
           });
           if (r.ok) return await r.json();
-          if (r.status === 401 || r.status === 403) {
+          if (r.status === 401 || r.status === 403 || r.status === 404) {
             useBackend = false;
-          } else {
-            throw new Error(await _errMsg(r));
           }
         } catch (err) {
-          if (err.message && !err.message.includes('Sign-in') && !err.message.includes('401')) {
-            throw err;
-          }
+          useBackend = false;
         }
       }
-      /* localStorage fallback */
-      let rows = (typeof DB !== 'undefined' && typeof DB.mine === 'function') ? DB.mine('tasks') : [];
+      /* LocalStorage fallback */
+      let rows = LocalTaskStore.getAll();
       if (status) rows = rows.filter(t => t.status === status);
       if (sort === 'priority') {
         const ranks = { HIGH: 1, MEDIUM: 2, LOW: 3 };
@@ -113,30 +195,34 @@
           });
           if (r.ok) return await r.json();
           if (r.status === 400) throw new Error(await _errMsg(r));
-          if (r.status === 401 || r.status === 403) {
+          if (r.status === 401 || r.status === 403 || r.status === 404) {
             useBackend = false;
           }
         } catch (err) {
           if (err.message && (err.message.includes('characters') || err.message.includes('required') || err.message.includes('date'))) {
             throw err;
           }
+          useBackend = false;
         }
       }
       const now = new Date().toISOString();
+      const all = LocalTaskStore.getAll();
+      const newId = Date.now();
+      const uid = (typeof Auth !== 'undefined' && typeof Auth.id === 'function') ? Auth.id() : 1;
       const task = {
+        id: newId,
+        task_id: newId,
+        userId: uid,
+        user_id: uid,
         title: payload.title,
         dueDate: payload.dueDate || payload.due_date,
         due_date: payload.dueDate || payload.due_date,
         priority: payload.priority || 'MEDIUM',
         status: 'TODO',
-        createdAt: now,
-        userId: (typeof Auth !== 'undefined' && typeof Auth.id === 'function') ? Auth.id() : 1
+        createdAt: now
       };
-      if (typeof DB !== 'undefined' && typeof DB.add === 'function') {
-        return DB.add('tasks', task);
-      }
-      task.id = Date.now();
-      task.task_id = task.id;
+      all.push(task);
+      LocalTaskStore.saveAll(all);
       return task;
     },
 
@@ -151,17 +237,18 @@
           });
           if (r.ok) return await r.json();
           if (r.status === 400) throw new Error(await _errMsg(r));
-          if (r.status === 401 || r.status === 403) useBackend = false;
+          if (r.status === 401 || r.status === 403 || r.status === 404) useBackend = false;
         } catch (err) {
-          if (err.message && (err.message.includes('characters') || err.message.includes('required'))) {
-            throw err;
-          }
+          if (err.message && (err.message.includes('characters') || err.message.includes('required'))) throw err;
+          useBackend = false;
         }
       }
-      if (typeof DB !== 'undefined' && typeof DB.upd === 'function') {
-        DB.upd('tasks', id, payload);
-        const rows = DB.mine('tasks');
-        return rows.find(x => (x.id === id || x.task_id === id)) || payload;
+      const all = LocalTaskStore.getAll();
+      const row = all.find(x => x.id === id || x.task_id === id);
+      if (row) {
+        Object.assign(row, payload);
+        LocalTaskStore.saveAll(all);
+        return row;
       }
       return payload;
     },
@@ -177,21 +264,21 @@
           });
           if (r.ok) return await r.json();
           if (r.status === 400) throw new Error(await _errMsg(r));
-          if (r.status === 401 || r.status === 403) useBackend = false;
+          if (r.status === 401 || r.status === 403 || r.status === 404) useBackend = false;
         } catch (err) {
           if (err.message && err.message.includes('reopened')) throw err;
+          useBackend = false;
         }
       }
-      if (typeof DB !== 'undefined' && typeof DB.mine === 'function') {
-        const rows = DB.mine('tasks');
-        const row = rows.find(x => (x.id === id || x.task_id === id));
-        if (row) {
-          if (row.status === 'DONE' && newStatus === 'IN_PROGRESS') {
-            throw new Error('Completed tasks must be reopened to To Do first');
-          }
-          DB.upd('tasks', id, { status: newStatus });
-          return { ...row, status: newStatus };
+      const all = LocalTaskStore.getAll();
+      const row = all.find(x => x.id === id || x.task_id === id);
+      if (row) {
+        if (row.status === 'DONE' && newStatus === 'IN_PROGRESS') {
+          throw new Error('Completed tasks must be reopened to To Do first');
         }
+        row.status = newStatus;
+        LocalTaskStore.saveAll(all);
+        return row;
       }
       return { status: newStatus };
     },
@@ -207,9 +294,9 @@
           if (r.ok) return true;
         } catch (_) {}
       }
-      if (typeof DB !== 'undefined' && typeof DB.del === 'function') {
-        DB.del('tasks', id);
-      }
+      let all = LocalTaskStore.getAll();
+      all = all.filter(x => !(x.id === id || x.task_id === id));
+      LocalTaskStore.saveAll(all);
       return true;
     }
   };
@@ -290,9 +377,11 @@
     pendingDeleteId: null,
 
     async init() {
+      ensureSidebar();
       await detectBackend();
       this.bindEvents();
       await this.load();
+      ensureSidebar();
     },
 
     bindEvents() {
@@ -549,5 +638,16 @@
     }
   };
 
-  document.addEventListener('DOMContentLoaded', () => TasksPage.init());
+  window.pages = window.pages || {};
+  window.pages.tasks = () => TasksPage.init();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      ensureSidebar();
+      TasksPage.init();
+    });
+  } else {
+    ensureSidebar();
+    TasksPage.init();
+  }
 })();
