@@ -1,0 +1,540 @@
+/* ==========================================================================
+   FlowSpace - Wellness Styles (Member 4 & Member 5)
+   File: css/wellness.css
+   Covers: Mood tracker, custom sliders, responsive table, and global search UI.
+   Reuses base variables: --plum, --deep, --rose, --blush, --sand, --sage, --bad
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Layout Harmony: Wellness Page Grid
+   -------------------------------------------------------------------------- */
+.wellness-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .wellness-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mood Selector UI
+   -------------------------------------------------------------------------- */
+.mood-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+
+.mood-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 0.3rem;
+  background: var(--blush);
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--deep);
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+}
+
+.mood-btn .icon {
+  font-size: 1.35rem;
+  margin-bottom: 0.2rem;
+  transition: transform 0.15s ease;
+}
+
+.mood-btn:hover {
+  background: #f1dfdf;
+  border-color: var(--rose);
+  transform: translateY(-1px);
+}
+
+.mood-btn:hover .icon {
+  transform: scale(1.15);
+}
+
+.mood-btn:focus-visible {
+  outline: 3px solid var(--rose);
+  outline-offset: 2px;
+}
+
+.mood-btn.active {
+  background: var(--plum);
+  color: #fff;
+  border-color: var(--deep);
+  box-shadow: 0 4px 10px rgba(107, 45, 69, 0.25);
+  font-weight: 700;
+}
+
+.mood-btn.active .icon {
+  transform: scale(1.18);
+}
+
+/* --------------------------------------------------------------------------
+   Styled Sliders (Pain, Sleep, Water)
+   -------------------------------------------------------------------------- */
+.slider-group {
+  margin-bottom: 1.1rem;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--deep);
+}
+
+.slider-val-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--plum);
+  background: var(--blush);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(107, 45, 69, 0.15);
+  min-width: 58px;
+  justify-content: center;
+}
+
+.slider-val-badge.pain-low {
+  color: #2f5a3e;
+  background: #e8f3ec;
+  border-color: #c2ded0;
+}
+
+.slider-val-badge.pain-med {
+  color: #8a6015;
+  background: #fbf3e0;
+  border-color: #ebd7a8;
+}
+
+.slider-val-badge.pain-high {
+  color: #8c1d32;
+  background: #fbe6ea;
+  border-color: #f1b8c4;
+}
+
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--sand), #e0d0c8);
+  outline: none;
+  margin: 0.4rem 0 0.2rem 0;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--plum);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(59, 23, 39, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: var(--deep);
+}
+
+.range-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--plum);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(59, 23, 39, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.range-slider:focus-visible {
+  outline: 3px solid var(--rose);
+  outline-offset: 3px;
+}
+
+.slider-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--mute);
+  padding: 0 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Mood Form State Banners (Edit Mode)
+   -------------------------------------------------------------------------- */
+.edit-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--sand);
+  color: var(--deep);
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  margin-bottom: 0.9rem;
+  border-left: 4px solid var(--plum);
+}
+
+.edit-banner .cancel-edit-btn {
+  background: transparent;
+  border: none;
+  color: var(--plum);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-size: 0.82rem;
+}
+
+/* --------------------------------------------------------------------------
+   Recent Entries Table (Mobile 375px Friendly)
+   -------------------------------------------------------------------------- */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+}
+
+.entries-table {
+  width: 100%;
+  min-width: 580px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.entries-table th {
+  background: var(--blush);
+  color: var(--deep);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.entries-table td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+
+.entries-table tbody tr {
+  transition: background 0.12s ease;
+}
+
+.entries-table tbody tr:hover {
+  background: #fdf8f6;
+}
+
+.entries-table .mood-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.mood-pill.HAPPY { background: #e6f4ea; color: #1e6b36; }
+.mood-pill.CALM { background: #e3f2fd; color: #15588f; }
+.mood-pill.NEUTRAL { background: #f0eef5; color: #58516d; }
+.mood-pill.TIRED { background: #fcf1d8; color: #7f5c12; }
+.mood-pill.ANXIOUS { background: #fee8d6; color: #9a480d; }
+.mood-pill.IRRITABLE { background: #fde2e4; color: #8e1f2b; }
+.mood-pill.SAD { background: #e9ecef; color: #495057; }
+
+.table-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.table-actions .btn.ghost {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
+}
+
+/* Mobile responsive card presentation for 375px screens */
+@media (max-width: 520px) {
+  .entries-table {
+    min-width: 100%;
+  }
+
+  /* When table is viewed on narrow phone, keep table scrollable or readable */
+  .table-wrapper {
+    box-shadow: inset -6px 0 8px -6px rgba(0,0,0,0.15);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Global Search Bar & Results Dropdown
+   -------------------------------------------------------------------------- */
+.nav-search-container {
+  position: relative;
+  margin: 0.5rem 0 1rem 0;
+  width: 100%;
+}
+
+.nav-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nav-search-box input {
+  width: 100%;
+  padding: 0.55rem 2rem 0.55rem 2.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.nav-search-box input::placeholder {
+  color: #c9aeb7;
+}
+
+.nav-search-box input:focus {
+  background: #ffffff;
+  color: var(--ink);
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(201, 139, 155, 0.35);
+}
+
+.nav-search-box .search-icon {
+  position: absolute;
+  left: 0.75rem;
+  pointer-events: none;
+  font-size: 0.9rem;
+  color: #c9aeb7;
+}
+
+.nav-search-box input:focus ~ .search-icon {
+  color: var(--plum);
+}
+
+.nav-search-box .search-clear {
+  position: absolute;
+  right: 0.65rem;
+  background: transparent;
+  border: none;
+  color: #c9aeb7;
+  font-size: 1rem;
+  cursor: pointer;
+  display: none;
+  line-height: 1;
+}
+
+.nav-search-box input:not(:placeholder-shown) ~ .search-clear {
+  display: block;
+}
+
+/* Search Dropdown Modal */
+.search-results-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  background: #ffffff !important;
+  color: var(--ink) !important;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(59, 23, 39, 0.35), 0 2px 8px rgba(0,0,0,0.12);
+  border: 1px solid var(--line);
+  max-height: 420px;
+  overflow-y: auto;
+  z-index: 99999;
+  display: none;
+}
+
+.search-results-dropdown.active {
+  display: block !important;
+  animation: searchDrop 0.15s ease-out;
+}
+
+@keyframes searchDrop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.search-results-header {
+  padding: 0.65rem 0.95rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--mute);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-close-tag {
+  background: transparent;
+  border: none;
+  color: var(--mute);
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+.search-close-tag:hover {
+  color: var(--bad);
+  background: var(--blush);
+}
+
+nav.side a.search-result-item,
+.search-result-item {
+  display: block !important;
+  padding: 0.75rem 0.95rem !important;
+  text-decoration: none !important;
+  color: var(--ink) !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  transition: background 0.12s ease !important;
+  cursor: pointer !important;
+  text-align: left !important;
+}
+
+nav.side a.search-result-item:last-child,
+.search-result-item:last-child {
+  border-bottom: none !important;
+}
+
+nav.side a.search-result-item:hover,
+nav.side a.search-result-item.selected,
+.search-result-item:hover,
+.search-result-item.selected {
+  background: #fdf0f3 !important;
+}
+
+.search-result-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+nav.side a.search-result-item .search-result-title,
+.search-result-title {
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  color: var(--deep) !important;
+}
+
+.search-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.search-tag.note {
+  background: var(--sand);
+  color: #614d33;
+}
+
+.search-tag.task {
+  background: #f8dfd8;
+  color: #8c3220;
+}
+
+.search-tag.mood,
+.search-tag.wellness {
+  background: #d8ece0;
+  color: #235c36;
+}
+
+nav.side a.search-result-item .search-result-summary,
+.search-result-summary {
+  font-size: 0.82rem !important;
+  color: #55444c !important;
+  line-height: 1.35 !important;
+  margin-top: 0.2rem !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+.search-result-date {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--mute);
+  margin-top: 0.25rem;
+}
+
+.search-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: var(--mute);
+  font-size: 0.88rem;
+}
+
+/* Keyboard hint in navigation search */
+.search-kbd {
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: #f3e9ec;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  position: absolute;
+  right: 0.6rem;
+  pointer-events: none;
+}
+
+.nav-search-box input:focus ~ .search-kbd,
+.nav-search-box input:not(:placeholder-shown) ~ .search-kbd {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility & High Contrast Focus
+   -------------------------------------------------------------------------- */
+.mood-btn:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--rose);
+  outline-offset: 2px;
+}
