@@ -28,6 +28,8 @@ const Auth = {
   me: null,
   id: () => (Auth.me ? (Auth.me.userId ?? Auth.me.id ?? Auth.me.email) : (+localStorage.getItem('fs_session') || 0)),
   user: () => Auth.me || (typeof DB !== 'undefined' && DB.d && DB.d.users ? DB.d.users.find(u => u.id === Auth.id()) : null),
+  id: () => (Auth.me ? (Auth.me.id ?? Auth.me.userId ?? Auth.me.email) : 0),
+  user: () => Auth.me,
   logout() {
     fetch(`${API}/logout`, { method: 'POST', credentials: 'include' })
       .catch(() => {})
@@ -62,6 +64,9 @@ function nav(page) {
   const userName = userObj ? (userObj.name || userObj.email || 'User') : 'User';
   $('#nav').innerHTML = '<div class="brand">FlowSpace</div>' + P.map(([p, l]) => `<a href="${p}.html" class="${p === page ? 'on' : ''}">${l}</a>`).join('') +
     `<p class="who">${esc(userName)}</p><button class="btn ghost" id="out">Log out</button>`;
+  const uName = (Auth.user() && Auth.user().name) ? Auth.user().name : (Auth.me && Auth.me.name) ? Auth.me.name : 'User';
+  $('#nav').innerHTML = '<div class="brand">FlowSpace</div>' + P.map(([p, l]) => `<a href="${p}.html" class="${p === page ? 'on' : ''}">${l}</a>`).join('') +
+    `<p class="who">${esc(uName)}</p><button class="btn ghost" id="out">Log out</button>`;
   $('#out').onclick = Auth.logout;
 }
 
@@ -71,6 +76,13 @@ function cycleInfo() {
   if (p.length > 1) len = Math.round(avg(p.slice(1).map((x, i) => daysBetween(p[i].start, x.start))));
   len = Math.min(60, Math.max(15, len));
   return { avg: len, count: p.length, last: last.start, next: addDays(last.start, len) };
+}
+
+async function getCyclePrediction() {
+  const response = await fetch(`${API}/periods/prediction`, { credentials: 'include' });
+  const prediction = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(prediction.error || 'Could not load cycle prediction.');
+  return prediction;
 }
 
 /* Page scripts fill this in. */

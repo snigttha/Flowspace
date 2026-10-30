@@ -1,18 +1,153 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tasks - FlowSpace</title><link rel="stylesheet" href="css/style.css"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tasks – FlowSpace</title>
+  <meta name="description" content="Manage tasks, track progress, and stay organized on the FlowSpace Kanban board.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/tasks.css">
+</head>
 <body data-page="tasks">
-<div class="shell"><nav class="side" id="nav"></nav><main>
-<h1>Tasks</h1>
-<form id="f" class="card" novalidate><input type="hidden" name="id">
-<div class="grid g3"><label>Task<input name="title" data-v="required|min:3|max:100"><small class="err" data-for="title"></small></label>
-<label>Due date<input name="due" type="date" data-v="required|date"><small class="err" data-for="due"></small></label>
-<label>Priority<select name="priority"><option value="LOW">Low</option><option value="MEDIUM" selected>Medium</option><option value="HIGH">High</option></select></label></div>
-<button class="btn">Add task</button></form>
-<div class="bar"><label style="margin:0">Sort by <select id="sort" style="display:inline-block;width:auto"><option value="due">Due date</option><option value="priority">Priority</option></select></label></div>
-<div class="kan">
-<div><h2>To do (<span id="n-TODO">0</span>)</h2><div id="c-TODO"></div></div>
-<div><h2>In progress (<span id="n-IN_PROGRESS">0</span>)</h2><div id="c-IN_PROGRESS"></div></div>
-<div><h2>Done (<span id="n-DONE">0</span>)</h2><div id="c-DONE"></div></div></div>
-</main></div>
-<script src="js/validate.js"></script><script src="js/core.js"></script><script src="js/tasks.js"></script></body></html>
+  <div class="shell">
+    <nav class="side" id="nav"></nav>
+    <main>
+      <div class="tasks-header">
+        <div>
+          <h1>Tasks</h1>
+          <p class="sub">Organize your work with a responsive Kanban workflow.</p>
+        </div>
+        <button class="btn" id="btnNewTask" aria-expanded="false" aria-controls="taskFormCard">
+          <span class="btn-icon">＋</span> New task
+        </button>
+      </div>
+
+      <!-- ── Create / Edit Form Card ── -->
+      <section id="taskFormCard" class="card task-form-card" hidden aria-label="Task editor">
+        <div class="form-header">
+          <h2 id="taskFormTitle">New task</h2>
+          <button class="btn ghost btn-sm" id="btnCancelTask" type="button" aria-label="Discard task">✕ Discard</button>
+        </div>
+        <form id="taskForm" novalidate autocomplete="off">
+          <input type="hidden" name="id" id="taskIdInput">
+          <div class="grid g3 form-row">
+            <label>
+              Title <span class="required-star" aria-hidden="true">*</span>
+              <input name="title" id="taskTitleInput" type="text" data-v="required|min:3|max:100"
+                placeholder="Task title (3–100 chars)…" minlength="3" maxlength="100" required>
+              <small class="err" id="err-title" data-for="title" role="alert"></small>
+            </label>
+            <label>
+              Due Date <span class="required-star" aria-hidden="true">*</span>
+              <input name="dueDate" id="taskDueDateInput" type="date" data-v="required" required>
+              <small class="err" id="err-due" data-for="dueDate" role="alert"></small>
+            </label>
+            <label>
+              Priority
+              <select name="priority" id="taskPrioritySelect">
+                <option value="LOW">🟢 Low</option>
+                <option value="MEDIUM" selected>🟡 Medium</option>
+                <option value="HIGH">🔴 High</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn" type="submit" id="btnSaveTask">Save Task</button>
+            <button class="btn ghost" type="button" id="btnCancelForm">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ── Metrics Summary Bar (Feeds Member 6 Dashboard) ── -->
+      <section class="metrics-bar" aria-label="Task Summary Statistics">
+        <div class="metric-card">
+          <span class="metric-label">To Do</span>
+          <span id="metricTodoCount" class="metric-value">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">In Progress</span>
+          <span id="metricInProgressCount" class="metric-value">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Completed</span>
+          <span id="metricDoneCount" class="metric-value">0</span>
+        </div>
+        <div class="metric-card metric-overdue">
+          <span class="metric-label">Overdue</span>
+          <span id="metricOverdueCount" class="metric-value">0</span>
+        </div>
+      </section>
+
+      <!-- ── Sort and Filter Toolbar ── -->
+      <div class="tasks-toolbar">
+        <label class="sort-control">
+          <span>Sort by:</span>
+          <select id="taskSortSelect">
+            <option value="due_date">Due Date (Earliest)</option>
+            <option value="priority">Priority (High to Low)</option>
+            <option value="created_at">Recently Created</option>
+          </select>
+        </label>
+        <span id="taskResultsCount" class="results-count" aria-live="polite"></span>
+      </div>
+
+      <!-- ── Loading state ── -->
+      <div id="loadingState" class="loading-state" hidden aria-label="Loading tasks" role="status">
+        <div class="spinner" aria-hidden="true"></div>
+        <span>Loading tasks…</span>
+      </div>
+
+      <!-- ── API Error Banner ── -->
+      <div id="apiBanner" class="api-banner" hidden role="alert">
+        <span id="apiBannerMsg"></span>
+        <button class="btn ghost btn-sm" id="btnRetry">Retry</button>
+      </div>
+
+      <!-- ── Three-Column Kanban Board ── -->
+      <div class="kanban-grid" id="kanbanBoard">
+        <!-- Column 1: TO DO -->
+        <div class="kanban-column column-todo" id="col-TODO">
+          <div class="kanban-col-header">
+            <h2>To Do (<span id="n-TODO">0</span>)</h2>
+          </div>
+          <div class="cards-container" id="c-TODO" role="list"></div>
+        </div>
+
+        <!-- Column 2: IN PROGRESS -->
+        <div class="kanban-column column-in-progress" id="col-IN_PROGRESS">
+          <div class="kanban-col-header">
+            <h2>In Progress (<span id="n-IN_PROGRESS">0</span>)</h2>
+          </div>
+          <div class="cards-container" id="c-IN_PROGRESS" role="list"></div>
+        </div>
+
+        <!-- Column 3: DONE -->
+        <div class="kanban-column column-done" id="col-DONE">
+          <div class="kanban-col-header">
+            <h2>Done (<span id="n-DONE">0</span>)</h2>
+          </div>
+          <div class="cards-container" id="c-DONE" role="list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Delete Confirmation Dialog ── -->
+  <dialog id="deleteDialog" aria-labelledby="dlgTitle" aria-describedby="dlgDesc">
+    <div class="dialog-inner">
+      <h2 id="dlgTitle">Delete this task?</h2>
+      <p id="dlgDesc" class="mute">This action cannot be undone. The task will be permanently removed.</p>
+      <div class="dialog-actions">
+        <button class="btn danger" id="confirmDelete">Yes, delete it</button>
+        <button class="btn ghost" id="cancelDelete">Keep it</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/validate.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/tasks.js"></script>
+</body>
+</html>

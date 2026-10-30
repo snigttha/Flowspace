@@ -38,6 +38,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CREATED).body(
                 Map.of(
                     "message", "Registration successful",
+                    "id", user.getUserId(),
                     "userId", user.getUserId(),
                     "name", user.getName(),
                     "email", user.getEmail()
@@ -76,6 +77,7 @@ public class AuthController {
             return ResponseEntity.ok(
                 Map.of(
                     "message", "Login successful",
+                    "id", user.getUserId(),
                     "userId", user.getUserId(),
                     "name", user.getName(),
                     "email", user.getEmail()
@@ -127,6 +129,7 @@ public class AuthController {
 
             return ResponseEntity.ok(
                 Map.of(
+                    "id", user.getUserId(),
                     "userId", user.getUserId(),
                     "name", user.getName(),
                     "email", user.getEmail()

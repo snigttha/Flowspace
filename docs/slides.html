@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FlowSpace - Member 5 Review Slides</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap">
+  <style>
+    :root {
+      --plum: #6b2d45;
+      --deep: #3b1727;
+      --rose: #c98b9b;
+      --blush: #f7ebed;
+      --sand: #ece3d4;
+      --sage: #7f9c86;
+      --bg: #faf6f4;
+      --ink: #2b1b22;
+      --mute: #7d6a73;
+      --line: #eadfdd;
+      --serif: 'Fraunces', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: radial-gradient(1000px 500px at 100% -10%, #f3dfe4 0, transparent 60%), var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .slide-deck {
+      width: 100%;
+      max-width: 960px;
+      min-height: 580px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(59, 23, 39, 0.12);
+      padding: 3rem 3.5rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .slide {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .slide.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-header {
+      margin-bottom: 1.8rem;
+    }
+    .slide-tag {
+      display: inline-block;
+      background: var(--blush);
+      color: var(--plum);
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-family: var(--serif);
+      font-size: 2.3rem;
+      color: var(--deep);
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 1.7rem;
+      color: var(--deep);
+      margin-bottom: 0.4rem;
+    }
+    .sub {
+      color: var(--mute);
+      font-size: 1.05rem;
+      line-height: 1.4;
+    }
+    .slide-body {
+      font-size: 1.02rem;
+      line-height: 1.6;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    .card-box {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1.3rem;
+    }
+    .card-box h3 {
+      font-family: var(--serif);
+      color: var(--plum);
+      font-size: 1.15rem;
+      margin-bottom: 0.4rem;
+    }
+    ul {
+      list-style-type: none;
+      margin-top: 0.8rem;
+    }
+    li {
+      margin-bottom: 0.6rem;
+      position: relative;
+      padding-left: 1.4rem;
+    }
+    li::before {
+      content: "•";
+      color: var(--rose);
+      font-size: 1.4rem;
+      position: absolute;
+      left: 0;
+      top: -0.2rem;
+    }
+    code, pre {
+      background: #fdf5f6;
+      border: 1px solid #ebd9dc;
+      border-radius: 8px;
+      font-family: Consolas, monospace;
+      font-size: 0.88rem;
+      color: #6b2d45;
+    }
+    pre {
+      padding: 0.8rem 1rem;
+      overflow-x: auto;
+      margin-top: 0.6rem;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+      margin-top: 2rem;
+    }
+    .nav-btn {
+      background: var(--plum);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 0.6rem 1.4rem;
+      font-family: var(--sans);
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .nav-btn:hover {
+      background: var(--deep);
+    }
+    .nav-btn.secondary {
+      background: transparent;
+      color: var(--plum);
+      border: 1px solid var(--line);
+    }
+    .nav-btn.secondary:hover {
+      background: var(--blush);
+    }
+    .progress-text {
+      color: var(--mute);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .badge-check {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="slide-deck">
+  <!-- Slide 1 -->
+  <div class="slide active" data-slide="1">
+    <div class="slide-header">
+      <span class="slide-tag">FlowSpace Team Review</span>
+      <h1>Member 5: Mood Tracker &amp; Global Search</h1>
+      <p class="sub">Complete Vertical Slice Architecture, OOP Implementation &amp; UX Delivery</p>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card-box">
+          <h3>🎯 Vertical Slice Scope</h3>
+          <ul>
+            <li><strong>Frontend:</strong> Mood Logging &amp; Real-time Navigation Global Search</li>
+            <li><strong>Styling:</strong> <code>css/wellness.css</code> with mobile 375px responsiveness</li>
+            <li><strong>OOP Java:</strong> <code>WorkspaceItem</code>, <code>MoodEntry</code>, <code>Dao&lt;T&gt;</code>, <code>MoodEntryDAO</code>, <code>SearchService</code></li>
+            <li><strong>Database:</strong> SQLite/MySQL upsert schema, aggregations</li>
+          </ul>
+        </div>
+        <div class="card-box">
+          <h3>🏆 Definition of Done Status</h3>
+          <ul>
+            <li><span class="badge-check">DONE</span> Daily mood logs save &amp; edit with upsert</li>
+            <li><span class="badge-check">DONE</span> Global search returns Notes, Tasks, and Moods</li>
+            <li><span class="badge-check">DONE</span> Polymorphic <code>summary()</code> dynamic dispatch</li>
+            <li><span class="badge-check">DONE</span> 19/19 Automated verification tests passing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 -->
+  <div class="slide" data-slide="2">
+    <div class="slide-header">
+      <span class="slide-tag">Architecture &amp; OOP</span>
+      <h2>Core OOP Principles in Action</h2>
+      <p class="sub">Inheritance, Polymorphism, Abstraction, and Encapsulation</p>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card-box">
+          <h3>1. Abstraction &amp; Inheritance</h3>
+          <p><strong><code>WorkspaceItem</code> (Abstract Base Class):</strong></p>
+          <ul style="font-size:0.92rem;">
+            <li>Defines abstract methods <code>validate()</code> and <code>summary()</code></li>
+            <li>Inherited by <code>MoodEntry</code>, <code>Note</code>, <code>Task</code></li>
+            <li>Provides unified identity (id, userId, createdAt)</li>
+          </ul>
+          <p style="margin-top:0.6rem;"><strong><code>Dao&lt;T&gt;</code> (Generic Interface):</strong></p>
+          <ul style="font-size:0.92rem;">
+            <li>Abstracts CRUD operations across all tables</li>
+          </ul>
+        </div>
+        <div class="card-box">
+          <h3>2. Polymorphism &amp; Encapsulation</h3>
+          <p><strong>Polymorphism in <code>SearchService</code>:</strong></p>
+          <pre>List&lt;WorkspaceItem&gt; items = search(...);
+for (WorkspaceItem item : items) {
+    // Dynamic runtime dispatch
+    String s = item.summary(); 
+}</pre>
+          <p style="margin-top:0.6rem;"><strong>Strict Encapsulation:</strong></p>
+          <p style="font-size:0.9rem; color:var(--mute);">Private fields protected with validated getters &amp; setters (pain: 0–10, sleep: 0–24h, water: 0–30 cups).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 -->
+  <div class="slide" data-slide="3">
+    <div class="slide-header">
+      <span class="slide-tag">Database &amp; Queries</span>
+      <h2>Database Design &amp; Upsert Query</h2>
+      <p class="sub">Guaranteed single log per day and cross-module aggregation for Member 6</p>
+    </div>
+    <div class="slide-body">
+      <div class="card-box">
+        <h3>Upsert SQL Pattern (SQLite &amp; MySQL)</h3>
+        <pre>INSERT INTO mood_entries (user_id, entry_date, mood, symptoms, pain_level, sleep_hours, water_intake)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(user_id, entry_date) DO UPDATE SET
+  mood = excluded.mood,
+  symptoms = excluded.symptoms,
+  pain_level = excluded.pain_level,
+  sleep_hours = excluded.sleep_hours,
+  water_intake = excluded.water_intake;</pre>
+      </div>
+      <div class="grid-2" style="margin-top:0.8rem;">
+        <div class="card-box">
+          <h3>Member 6 Aggregation Query</h3>
+          <pre>SELECT COUNT(*) AS total_entries,
+       AVG(sleep_hours) AS avg_sleep,
+       AVG(water_intake) AS avg_water,
+       AVG(pain_level) AS avg_pain
+FROM mood_entries WHERE user_id = ?;</pre>
+        </div>
+        <div class="card-box">
+          <h3>Security &amp; Multi-Tenant Isolation</h3>
+          <ul style="font-size:0.92rem;">
+            <li>Every query is scoped strictly by <code>user_id</code></li>
+            <li>Parameterized <code>PreparedStatement</code> prevents SQL injection</li>
+            <li>Another user can never see or modify entries</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4 -->
+  <div class="slide" data-slide="4">
+    <div class="slide-header">
+      <span class="slide-tag">Frontend &amp; UX</span>
+      <h2>Interactive Frontend &amp; Global Search UI</h2>
+      <p class="sub">Plum &amp; Sand design language, responsive at 375px width</p>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card-box">
+          <h3>Mood Tracker Controls</h3>
+          <ul>
+            <li><strong>Visual Mood Selector:</strong> 7 responsive chips (Happy 😊, Calm 😌, Neutral 😐, Tired 😴, Anxious 😰, Irritable 😣, Sad 😢) synced with form select.</li>
+            <li><strong>Custom Range Sliders:</strong> Live value badges with color feedback (green, amber, deep red).</li>
+            <li><strong>Responsive Table:</strong> Works on phones (375px); includes "Edit" button to prefill and update that day's log.</li>
+          </ul>
+        </div>
+        <div class="card-box">
+          <h3>Global Search in Navigation</h3>
+          <ul>
+            <li><strong>Accessible Keyboard Shortcut:</strong> Press <code>/</code> or <code>Ctrl+K</code> to jump straight to search.</li>
+            <li><strong>Unified Results:</strong> Grouped results tagged with <code>NOTE</code>, <code>TASK</code>, and <code>MOOD</code> badges.</li>
+            <li><strong>Polymorphic Preview:</strong> Displays concise preview line generated by <code>summary()</code>.</li>
+            <li><strong>Dual-Mode Fetch:</strong> REST API with instant client-side fallback.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 -->
+  <div class="slide" data-slide="5">
+    <div class="slide-header">
+      <span class="slide-tag">Verification</span>
+      <h2>Testing &amp; Verification Summary</h2>
+      <p class="sub">19 Automated Tests Passed with 0 Failures</p>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card-box">
+          <h3>Test Coverage Breakdown</h3>
+          <ul>
+            <li><strong>Validation Bounds:</strong> Pain 0–10, Sleep 0–24, Water 0–30, future date rejected.</li>
+            <li><strong>Upsert Execution:</strong> 2nd save on same date updates single row cleanly.</li>
+            <li><strong>Aggregations:</strong> Accurate averages for sleep, water, and pain hand-off to Member 6.</li>
+            <li><strong>Polymorphic Search:</strong> Search collects items of all 3 types and invokes <code>summary()</code>.</li>
+            <li><strong>User Privacy:</strong> User 1 cannot view or modify User 2 records.</li>
+          </ul>
+        </div>
+        <div class="card-box" style="text-align:center; display:flex; flex-direction:column; justify-content:center;">
+          <h1 style="color:#2e7d32; font-size:3.5rem;">100%</h1>
+          <p style="font-weight:700; color:var(--deep); margin-bottom:0.5rem;">Member 5 Requirements Fulfilled</p>
+          <p style="color:var(--mute); font-size:0.92rem;">Ready for team integration and presentation review.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide Footer / Controls -->
+  <div class="controls">
+    <button class="nav-btn secondary" id="prevSlide">&larr; Previous</button>
+    <span class="progress-text" id="slideIndicator">Slide 1 of 5</span>
+    <button class="nav-btn" id="nextSlide">Next &rarr;</button>
+  </div>
+</div>
+
+<script>
+  let current = 1;
+  const total = 5;
+  const slides = document.querySelectorAll('.slide');
+  const indicator = document.getElementById('slideIndicator');
+
+  function showSlide(n) {
+    slides.forEach(s => s.classList.remove('active'));
+    current = Math.max(1, Math.min(n, total));
+    document.querySelector(`.slide[data-slide="${current}"]`).classList.add('active');
+    indicator.textContent = `Slide ${current} of ${total}`;
+    document.getElementById('prevSlide').style.visibility = current === 1 ? 'hidden' : 'visible';
+    document.getElementById('nextSlide').textContent = current === total ? 'Restart ↺' : 'Next →';
+  }
+
+  document.getElementById('prevSlide').onclick = () => showSlide(current - 1);
+  document.getElementById('nextSlide').onclick = () => {
+    if (current === total) showSlide(1);
+    else showSlide(current + 1);
+  };
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') showSlide(current + 1);
+    if (e.key === 'ArrowLeft') showSlide(current - 1);
+  });
+
+  showSlide(1);
+</script>
+</body>
+</html>
