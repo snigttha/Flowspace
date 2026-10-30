@@ -56,6 +56,22 @@ function cycleInfo() {
   return { avg: len, count: p.length, last: last.start, next: addDays(last.start, len) };
 }
 
+async function getCyclePrediction() {
+  try {
+    const response = await fetch('/api/periods/prediction', { credentials: 'include' });
+    const prediction = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(prediction.error || 'Could not load cycle prediction.');
+    return prediction;
+  } catch (error) {
+    const local = cycleInfo();
+    return local ? {
+      logged_cycles: local.count,
+      average_cycle_days: local.avg,
+      predicted_next_date: local.next
+    } : { logged_cycles: 0 };
+  }
+}
+
 const pages = {
   login() {
     const f = $('#f');
@@ -75,15 +91,71 @@ const pages = {
     });
   },
   dashboard() {
-    const notes = DB.mine('notes'), tasks = DB.mine('tasks'), moods = DB.mine('moods'), c = cycleInfo();
-    $('#name').textContent = Auth.user().name.split(' ')[0];
-    $('#sNotes').textContent = notes.length;
-    $('#sTasks').textContent = tasks.filter(t => t.status !== 'DONE').length;
-    $('#sMoods').textContent = moods.length;
-    $('#sNext').textContent = c ? fmt(c.next) : 'Not logged';
-    const acts = [...notes.map(n => ({ at: n.updatedAt, t: 'Note: ' + n.title })), ...tasks.map(t => ({ at: t.createdAt, t: 'Task: ' + t.title })),
-      ...moods.map(m => ({ at: m.createdAt, t: 'Wellness log for ' + fmt(m.date) }))].sort((a, b) => b.at - a.at).slice(0, 5);
-    $('#recent').innerHTML = acts.length ? acts.map(a => `<li>${esc(a.t)} <span class="mute">(${fmt(ymd(a.at))})</span></li>`).join('') : '<li class="empty">Nothing here yet. Add a note, task or wellness log to get started.</li>';
+    const notes = (typeof DB !== 'undefined' && typeof DB.mine === 'function') ? DB.mine('notes') : [];
+    const moods = (typeof DB !== 'undefined' && typeof DB.mine === 'function') ? DB.mine('moods') : [];
+    const uid = (typeof Auth !== 'undefined' && typeof Auth.id === 'function') ? Auth.id() : 0;
+    let localTasks = [];
+    try {
+      const raw = localStorage.getItem('flowspace_tasks_' + uid);
+      if (raw) localTasks = JSON.parse(raw);
+      else if (typeof DB !== 'undefined' && typeof DB.mine === 'function') localTasks = DB.mine('tasks');
+    } catch (_) {
+      localTasks = (typeof DB !== 'undefined' && typeof DB.mine === 'function') ? DB.mine('tasks') : [];
+    }
+
+    const uName = (typeof Auth !== 'undefined' && Auth.user() && Auth.user().name)
+      ? Auth.user().name
+      : (typeof Auth !== 'undefined' && Auth.me && Auth.me.name) ? Auth.me.name : '';
+    const nameEl = $('#name');
+    if (nameEl) nameEl.textContent = uName.split(' ')[0] || 'there';
+
+    const sNotes = $('#sNotes');
+    if (sNotes) sNotes.textContent = notes.length;
+
+    const sMoods = $('#sMoods');
+    if (sMoods) sMoods.textContent = moods.length;
+
+    const renderTasks = (tasksList) => {
+      const sTasks = $('#sTasks');
+      if (sTasks) sTasks.textContent = tasksList.filter(t => t.status !== 'DONE').length;
+      const recentEl = $('#recent');
+      if (recentEl) {
+        const acts = [
+          ...notes.map(n => ({ at: n.updatedAt || Date.now(), t: 'Note: ' + n.title })),
+          ...tasksList.map(t => ({ at: Date.parse(t.created_at || t.createdAt || 0) || Date.now(), t: 'Task: ' + t.title })),
+          ...moods.map(m => ({ at: m.createdAt || Date.now(), t: 'Wellness log for ' + fmt(m.date) }))
+        ].sort((a, b) => b.at - a.at).slice(0, 5);
+        recentEl.innerHTML = acts.length
+          ? acts.map(a => `<li>${esc(a.t)} <span class="mute">(${fmt(ymd(a.at))})</span></li>`).join('')
+          : '<li class="empty">Nothing here yet. Add a note, task or wellness log to get started.</li>';
+      }
+    };
+
+    renderTasks(localTasks);
+
+    fetch('/api/tasks', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(apiTasks => {
+        if (Array.isArray(apiTasks)) {
+          renderTasks(apiTasks);
+          try {
+            localStorage.setItem('flowspace_tasks_' + uid, JSON.stringify(apiTasks));
+          } catch (_) {}
+        }
+      })
+      .catch(() => {});
+
+    const sNext = $('#sNext');
+    if (sNext) {
+      sNext.textContent = 'Loading...';
+      if (typeof getCyclePrediction === 'function') {
+        getCyclePrediction().then(prediction => {
+          sNext.textContent = prediction && prediction.predicted_next_date ? fmt(prediction.predicted_next_date) : 'Not logged';
+        }).catch(() => { sNext.textContent = 'Unavailable'; });
+      } else {
+        sNext.textContent = 'Not logged';
+      }
+    }
   },
   notes() {
     /* Member 2 owns this page – notes.js handles all initialisation.
@@ -119,24 +191,103 @@ const pages = {
   },
   wellness() {
     const cf = $('#cycle'), mf = $('#mood'); let cm = new Date(); cm.setDate(1);
+    let periods = [], prediction = null, cycleApi = false;
+    const cycleError = $('#cycleError');
+    const getLocalPrediction = () => {
+      const sorted = [...periods].sort((a, b) => a.cycle_start_date.localeCompare(b.cycle_start_date));
+      if (!sorted.length) return null;
+      const latest = sorted[sorted.length - 1];
+      let days = latest.cycle_length;
+      if (sorted.length > 1) {
+        days = Math.round(avg(sorted.slice(1).map((cycle, i) => daysBetween(sorted[i].cycle_start_date, cycle.cycle_start_date))));
+      }
+      days = Math.min(60, Math.max(15, days));
+      return { logged_cycles: sorted.length, average_cycle_days: days, predicted_next_date: addDays(latest.cycle_start_date, days),
+        message: `Next period expected around ${fmt(addDays(latest.cycle_start_date, days))} (average cycle ${days} days, ${sorted.length} logged).` };
+    };
+    const refreshCycles = async (allowDemo = true) => {
+      try {
+        $('#cycleLoading').textContent = 'Loading cycle data...';
+        const responses = await Promise.all([
+          fetch('/api/periods', { credentials: 'include' }),
+          fetch('/api/periods/prediction', { credentials: 'include' })
+        ]);
+        const bodies = await Promise.all(responses.map(async response => {
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(body.error || 'Could not load cycle data.');
+          return body;
+        }));
+        periods = bodies[0]; prediction = bodies[1]; cycleApi = true;
+        $('#cycleLoading').textContent = periods.length ? '' : 'No cycles logged yet.';
+        cycleError.textContent = '';
+        cal();
+        return true;
+      } catch (error) {
+        cycleApi = false;
+        if (!allowDemo) {
+          cycleError.textContent = error.message || 'Could not refresh cycle data.';
+          $('#cycleLoading').textContent = '';
+          return false;
+        }
+        periods = DB.mine('periods').map(cycle => ({
+          cycle_start_date: cycle.start,
+          cycle_length: cycle.length
+        }));
+        prediction = getLocalPrediction();
+        $('#cycleLoading').textContent = 'Demo mode: cycle data is saved in this browser.';
+        cal();
+        return false;
+      }
+    };
     const cal = () => {
-      const c = cycleInfo(), starts = new Set(DB.mine('periods').map(p => p.start)), y = cm.getFullYear(), m = cm.getMonth(), first = new Date(y, m, 1).getDay();
-      let h = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<b>${d}</b>`).join('') + '<span></span>'.repeat(first);
+      const starts = new Set(periods.map(period => period.cycle_start_date));
+      const y = cm.getFullYear(), m = cm.getMonth(), first = new Date(y, m, 1).getDay();
+      let h = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<b role="columnheader">${d}</b>`).join('') + '<span aria-hidden="true"></span>'.repeat(first);
       for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
         const s = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        h += `<span class="${starts.has(s) ? 'p' : c && s === c.next ? 'n' : ''}">${d}</span>`;
+        const marker = starts.has(s) ? 'cycle-start' : prediction && s === prediction.predicted_next_date ? 'cycle-predicted' : '';
+        h += `<span class="cycle-date ${marker}" role="gridcell" aria-label="${s}${marker ? `, ${marker === 'cycle-start' ? 'period start' : 'predicted next period'}` : ''}">${d}</span>`;
       }
       $('#cal').innerHTML = h; $('#calTitle').textContent = cm.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-      $('#pred').textContent = c ? `Next period expected around ${fmt(c.next)} (average cycle ${c.avg} days, ${c.count} logged).` : 'Log your first cycle to see a prediction.';
+      $('#pred').textContent = prediction ? prediction.message : 'Log your first cycle to see a prediction.';
     };
     const list = () => {
       const m = DB.mine('moods').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
       $('#moods').innerHTML = m.length ? m.map(x => `<tr><td>${fmt(x.date)}</td><td>${label(x.mood)}</td><td>${x.pain}/10</td><td>${x.sleep} h</td><td>${x.water}</td><td>${esc(x.symptoms) || '-'}</td></tr>`).join('') : '<tr><td colspan="6" class="mute">No entries yet.</td></tr>';
     };
-    onSubmit(cf, v => {
-      const ex = DB.mine('periods').find(p => p.start === v.start);
-      if (ex) DB.upd('periods', ex.id, { length: +v.length }); else DB.add('periods', { userId: Auth.id(), start: v.start, length: +v.length, createdAt: Date.now() });
-      say('Cycle saved'); cal();
+    onSubmit(cf, async v => {
+      const button = $('button.btn', cf);
+      button.disabled = true;
+      cycleError.textContent = '';
+      try {
+        if (cycleApi) {
+          const response = await fetch('/api/periods', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cycle_start_date: v.start, cycle_length: Number(v.length) })
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const field = /length/i.test(result.error || '') ? 'length' : /date/i.test(result.error || '') ? 'start' : null;
+            if (field) FSV.fail(cf, field, result.error);
+            else cycleError.textContent = result.error || 'Could not save this cycle.';
+            return;
+          }
+          await refreshCycles(false);
+        } else {
+          const existing = DB.mine('periods').find(cycle => cycle.start === v.start);
+          if (existing) DB.upd('periods', existing.id, { length: Number(v.length) });
+          else DB.add('periods', { userId: Auth.id(), start: v.start, length: Number(v.length), createdAt: Date.now() });
+          periods = DB.mine('periods').map(cycle => ({ cycle_start_date: cycle.start, cycle_length: cycle.length }));
+          prediction = getLocalPrediction();
+          cal();
+        }
+        say('Cycle saved');
+      } catch (error) {
+        cycleError.textContent = error.message || 'Could not save this cycle.';
+      } finally {
+        button.disabled = false;
+      }
     });
     onSubmit(mf, v => {
       const row = { date: v.date, mood: v.mood, symptoms: v.symptoms.trim(), pain: +v.pain, sleep: +v.sleep, water: +v.water }, ex = DB.mine('moods').find(m => m.date === v.date);
@@ -145,7 +296,7 @@ const pages = {
     });
     $('#prev').onclick = () => { cm.setMonth(cm.getMonth() - 1); cal(); };
     $('#next').onclick = () => { cm.setMonth(cm.getMonth() + 1); cal(); };
-    mf.elements.date.value = FSV.today(); sliders(mf); cal(); list();
+    mf.elements.date.value = FSV.today(); sliders(mf); cal(); list(); refreshCycles();
   },
   analytics() {
     const t = DB.mine('tasks'), done = t.filter(x => x.status === 'DONE').length, pct = t.length ? Math.round(done / t.length * 100) : 0, today = FSV.today();
@@ -153,8 +304,12 @@ const pages = {
       <p class="mute">To do ${t.filter(x => x.status === 'TODO').length} · In progress ${t.filter(x => x.status === 'IN_PROGRESS').length} · Overdue ${t.filter(x => x.status !== 'DONE' && x.due < today).length}</p>` : '<p class="empty">Add tasks to see completion stats.</p>';
     const m = DB.mine('moods').sort((a, b) => a.date.localeCompare(b.date)), last = m.slice(-7);
     $('#trend').innerHTML = last.length ? last.map(x => `<div class="col" title="${label(x.mood)}"><i style="height:${MOOD[x.mood] * 20}%"></i><small>${x.date.slice(5)}</small></div>`).join('') : '<p class="empty">Log your mood to see a trend.</p>';
-    const c = cycleInfo();
-    $('#cyc').innerHTML = c ? `<p><b>${c.avg} days</b> average cycle</p><p class="mute">${c.count} cycle${c.count > 1 ? 's' : ''} logged. Next expected around ${fmt(c.next)}.</p>` : '<p class="empty">Log a cycle to see statistics.</p>';
+    $('#cyc').innerHTML = '<p class="mute">Loading cycle statistics...</p>';
+    getCyclePrediction().then(c => {
+      $('#cyc').innerHTML = c.logged_cycles
+        ? `<p><b>${c.average_cycle_days} days</b> average cycle</p><p class="mute">${c.logged_cycles} cycle${c.logged_cycles > 1 ? 's' : ''} logged. Next expected around ${fmt(c.predicted_next_date)}.</p>`
+        : '<p class="empty">Log a cycle to see statistics.</p>';
+    });
     const ins = [];
     if (m.length >= 3) {
       ins.push(`Across ${m.length} entries you average ${avg(m.map(x => x.sleep)).toFixed(1)} hours of sleep, ${avg(m.map(x => x.water)).toFixed(1)} glasses of water and pain level ${avg(m.map(x => x.pain)).toFixed(1)}/10.`);

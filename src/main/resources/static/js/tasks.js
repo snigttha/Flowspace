@@ -96,7 +96,14 @@
       if (typeof DB !== 'undefined' && DB.d && Array.isArray(DB.d.tasks)) {
         try {
           const uid = parseInt(this.getKey().replace('flowspace_tasks_', ''), 10) || 1;
-          DB.d.tasks = DB.d.tasks.filter(t => t.userId !== uid).concat(tasks);
+          const normalized = (tasks || []).map(t => ({
+            ...t,
+            id: t.task_id || t.id,
+            userId: uid,
+            status: t.status || 'TODO',
+            createdAt: t.created_at ? Date.parse(t.created_at) : (t.createdAt || Date.now())
+          }));
+          DB.d.tasks = DB.d.tasks.filter(t => t.userId !== uid).concat(normalized);
           if (typeof DB.save === 'function') DB.save();
         } catch (_) {}
       }
@@ -428,6 +435,7 @@
       const sortBy = $('#taskSortSelect')?.value || 'due_date';
       try {
         this.tasks = await TasksAPI.list('', sortBy);
+        LocalTaskStore.saveAll(this.tasks);
         this.render();
       } catch (err) {
         this.showError(`Failed to load tasks: ${err.message}`);
